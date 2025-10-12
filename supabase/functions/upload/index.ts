@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { google } from "npm:googleapis@latest";
+import { google } from "googleapis";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -109,7 +109,7 @@ serve(async (req) => {
         results.push({
           name: file.name,
           success: false,
-          error: error.message || 'Upload failed',
+          error: error instanceof Error ? error.message : 'Upload failed',
         });
       }
     }
@@ -138,7 +138,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
