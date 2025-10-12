@@ -1,6 +1,6 @@
 {
   "nodeModulesDir": "auto",
   "imports": {
-    "googleapis": "npm:googleapis@^144.0.0"
+    "googleapis": "npm:googleapis@144.0.0"
   }
 }
