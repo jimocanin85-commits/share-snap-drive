@@ -40,14 +40,15 @@ const UploadPage = () => {
     });
 
     try {
-      // Get the function URL
-      const { data: { session } } = await supabase.auth.getSession();
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload`;
+      // Get Supabase URL and anon key from client
+      const supabaseUrl = 'https://yqbnwxwqlekqwdooevyb.supabase.co';
+      const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxYm53eHdxbGVrcXdkb29ldnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxOTI1MTksImV4cCI6MjA3NTc2ODUxOX0.WBP2B6EHr1IEpMMEUOpQYonNoNyVF7HNKKrCgr_dQZI';
+      const functionUrl = `${supabaseUrl}/functions/v1/upload`;
       
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: formData,
       });
