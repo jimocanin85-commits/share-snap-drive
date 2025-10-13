@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, CheckCircle2, AlertCircle, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const UploadPage = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -39,15 +40,12 @@ const UploadPage = () => {
     });
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('upload', {
         body: formData,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Upload fejlede');
+      if (error) {
+        throw new Error(error.message || 'Upload fejlede');
       }
 
       setUploadStatus("✅ Tak! Dine billeder er modtaget.");
