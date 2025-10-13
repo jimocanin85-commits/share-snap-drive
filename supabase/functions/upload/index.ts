@@ -36,23 +36,31 @@ async function createJWT(clientEmail: string, privateKey: string): Promise<strin
   let base64Key = keyData
     .replace(pemHeader, '')
     .replace(pemFooter, '')
-    .replace(/\s/g, '')
-    .replace(/\n/g, '')
-    .replace(/\r/g, '');
+    .replace(/[\s\n\r]/g, '');  // Remove all whitespace
   
-  console.log('Base64 key length:', base64Key.length);
+  // Validate base64 - only keep valid base64 characters (A-Z, a-z, 0-9, +, /, =)
+  base64Key = base64Key.replace(/[^A-Za-z0-9+/=]/g, '');
   
-  const binaryKey = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
+  console.log('Base64 key length after cleaning:', base64Key.length);
+  console.log('First 50 chars:', base64Key.substring(0, 50));
   
-  const cryptoKey = await crypto.subtle.importKey(
-    "pkcs8",
-    binaryKey,
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
+  try {
+    const binaryKey = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
+  
+    const cryptoKey = await crypto.subtle.importKey(
+      "pkcs8",
+      binaryKey,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
 
-  return await create(header, payload, cryptoKey);
+    return await create(header, payload, cryptoKey);
+  } catch (error) {
+    console.error('Failed to process private key:', error);
+    console.error('Key might contain invalid characters or be improperly formatted');
+    throw new Error('Invalid private key format. Please ensure the key is properly copied from your Google Service Account JSON file.');
+  }
 }
 
 // Helper function to get access token
