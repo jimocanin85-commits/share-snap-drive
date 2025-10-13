@@ -40,13 +40,24 @@ const UploadPage = () => {
     });
 
     try {
-      const { data, error } = await supabase.functions.invoke('upload', {
+      // Get the function URL
+      const { data: { session } } = await supabase.auth.getSession();
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: formData,
       });
 
-      if (error) {
-        throw new Error(error.message || 'Upload fejlede');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Upload fejlede' }));
+        throw new Error(errorData.error || 'Upload fejlede');
       }
+
+      const data = await response.json();
 
       setUploadStatus("✅ Tak! Dine billeder er modtaget.");
       setIsSuccess(true);
