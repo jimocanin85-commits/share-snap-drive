@@ -20,16 +20,29 @@ async function createJWT(clientEmail: string, privateKey: string): Promise<strin
     iat: now,
   };
 
-  // Import private key
-  const keyData = privateKey.replace(/\\n/g, '\n');
+  // Import private key - handle both escaped and actual newlines
+  let keyData = privateKey;
+  
+  // Replace escaped newlines with actual newlines
+  if (keyData.includes('\\n')) {
+    keyData = keyData.replace(/\\n/g, '\n');
+  }
+  
+  // Remove headers, footers, and all whitespace to get pure base64
   const pemHeader = "-----BEGIN PRIVATE KEY-----";
   const pemFooter = "-----END PRIVATE KEY-----";
-  const pemContents = keyData.substring(
-    pemHeader.length,
-    keyData.length - pemFooter.length
-  ).replace(/\s/g, "");
   
-  const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  // Extract just the base64 content
+  let base64Key = keyData
+    .replace(pemHeader, '')
+    .replace(pemFooter, '')
+    .replace(/\s/g, '')
+    .replace(/\n/g, '')
+    .replace(/\r/g, '');
+  
+  console.log('Base64 key length:', base64Key.length);
+  
+  const binaryKey = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
   
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
