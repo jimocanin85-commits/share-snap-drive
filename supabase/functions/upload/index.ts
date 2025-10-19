@@ -17,9 +17,9 @@ serve(async (req) => {
     const apiKey = Deno.env.get('CLOUDINARY_API_KEY');
     const apiSecret = Deno.env.get('CLOUDINARY_API_SECRET');
 
-    console.log('Cloud Name from env:', cloudName);
-    console.log('API Key exists:', !!apiKey);
-    console.log('API Secret exists:', !!apiSecret);
+    console.log('Cloudinary Config - Cloud Name:', cloudName);
+    console.log('Cloudinary Config - API Key exists:', !!apiKey);
+    console.log('Cloudinary Config - API Secret exists:', !!apiSecret);
 
     if (!cloudName || !apiKey || !apiSecret) {
       throw new Error('Missing Cloudinary credentials');
