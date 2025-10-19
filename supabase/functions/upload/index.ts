@@ -1,88 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { create } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
-import type { Algorithm } from "https://deno.land/x/djwt@v3.0.2/algorithm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Helper function to create JWT for Google API authentication
-async function createJWT(clientEmail: string, privateKey: string): Promise<string> {
-  const header = { alg: "RS256" as Algorithm, typ: "JWT" };
-  const now = Math.floor(Date.now() / 1000);
-  
-  const payload = {
-    iss: clientEmail,
-    scope: "https://www.googleapis.com/auth/drive.file",
-    aud: "https://oauth2.googleapis.com/token",
-    exp: now + 3600,
-    iat: now,
-  };
-
-  // Import private key - handle both escaped and actual newlines
-  let keyData = privateKey;
-  
-  // Replace escaped newlines with actual newlines
-  if (keyData.includes('\\n')) {
-    keyData = keyData.replace(/\\n/g, '\n');
-  }
-  
-  // Remove headers, footers, and all whitespace to get pure base64
-  const pemHeader = "-----BEGIN PRIVATE KEY-----";
-  const pemFooter = "-----END PRIVATE KEY-----";
-  
-  // Extract just the base64 content
-  let base64Key = keyData
-    .replace(pemHeader, '')
-    .replace(pemFooter, '')
-    .replace(/[\s\n\r]/g, '');  // Remove all whitespace
-  
-  // Validate base64 - only keep valid base64 characters (A-Z, a-z, 0-9, +, /, =)
-  base64Key = base64Key.replace(/[^A-Za-z0-9+/=]/g, '');
-  
-  console.log('Base64 key length after cleaning:', base64Key.length);
-  console.log('First 50 chars:', base64Key.substring(0, 50));
-  
-  try {
-    const binaryKey = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
-  
-    const cryptoKey = await crypto.subtle.importKey(
-      "pkcs8",
-      binaryKey,
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-
-    return await create(header, payload, cryptoKey);
-  } catch (error) {
-    console.error('Failed to process private key:', error);
-    console.error('Key might contain invalid characters or be improperly formatted');
-    throw new Error('Invalid private key format. Please ensure the key is properly copied from your Google Service Account JSON file.');
-  }
-}
-
-// Helper function to get access token
-async function getAccessToken(clientEmail: string, privateKey: string): Promise<string> {
-  const jwt = await createJWT(clientEmail, privateKey);
-  
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion: jwt,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to get access token: ${await response.text()}`);
-  }
-
-  const data = await response.json();
-  return data.access_token;
-}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -91,24 +12,16 @@ serve(async (req) => {
   }
 
   try {
-    // Get environment variables
-    const clientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL');
-    const privateKey = Deno.env.get('GOOGLE_PRIVATE_KEY');
-    let folderId = Deno.env.get('GOOGLE_DRIVE_FOLDER_ID');
+    // Get Cloudinary credentials from environment variables
+    const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME');
+    const apiKey = Deno.env.get('CLOUDINARY_API_KEY');
+    const apiSecret = Deno.env.get('CLOUDINARY_API_SECRET');
 
-    if (!clientEmail || !privateKey || !folderId) {
-      throw new Error('Missing required environment variables');
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error('Missing Cloudinary credentials');
     }
 
-    // Extract folder ID if it's a full URL
-    if (folderId.includes('drive.google.com')) {
-      const match = folderId.match(/folders\/([a-zA-Z0-9_-]+)/);
-      if (match) {
-        folderId = match[1];
-      }
-    }
-    
-    console.log('Using folder ID:', folderId);
+    console.log('Processing upload request...');
 
     // Parse form data
     const formData = await req.formData();
@@ -121,8 +34,7 @@ serve(async (req) => {
       );
     }
 
-    // Get access token
-    const accessToken = await getAccessToken(clientEmail, privateKey);
+    console.log(`Received ${files.length} files`);
 
     const results = [];
     const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
@@ -132,97 +44,86 @@ serve(async (req) => {
     for (const file of files) {
       if (!(file instanceof File)) continue;
 
-      // Validate file type
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        results.push({
-          name: file.name,
-          success: false,
-          error: 'Invalid file type. Only JPG, PNG, and WEBP allowed.',
-        });
-        continue;
-      }
-
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        results.push({
-          name: file.name,
-          success: false,
-          error: 'File too large. Maximum size is 15MB.',
-        });
-        continue;
-      }
+      const fileName = file.name;
+      console.log(`Processing file: ${fileName}`);
 
       try {
-        // Generate unique filename
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const randomId = crypto.randomUUID().slice(0, 8);
-        const fileName = `${timestamp}_${randomId}_${file.name}`;
+        // Validate file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          results.push({
+            name: fileName,
+            success: false,
+            error: 'Invalid file type. Only JPG, PNG, and WEBP allowed.',
+          });
+          continue;
+        }
 
-        // Convert file to buffer
-        const fileBuffer = await file.arrayBuffer();
-        
-        // Create metadata for the file
-        const metadata = {
-          name: fileName,
-          parents: [folderId],
-        };
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+          results.push({
+            name: fileName,
+            success: false,
+            error: 'File too large. Maximum size is 15MB.',
+          });
+          continue;
+        }
 
-        // Create multipart upload with proper binary handling
-        const boundary = '-------314159265358979323846';
-        const metadataPart = new TextEncoder().encode(
-          `--${boundary}\r\n` +
-          'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-          JSON.stringify(metadata) + '\r\n'
-        );
-        
-        const filePart = new TextEncoder().encode(
-          `--${boundary}\r\n` +
-          `Content-Type: ${file.type}\r\n\r\n`
-        );
-        
-        const fileData = new Uint8Array(fileBuffer);
-        const endBoundary = new TextEncoder().encode(`\r\n--${boundary}--`);
-        
-        // Combine all parts
-        const multipartBody = new Uint8Array(
-          metadataPart.length + filePart.length + fileData.length + endBoundary.length
-        );
-        multipartBody.set(metadataPart, 0);
-        multipartBody.set(filePart, metadataPart.length);
-        multipartBody.set(fileData, metadataPart.length + filePart.length);
-        multipartBody.set(endBoundary, metadataPart.length + filePart.length + fileData.length);
+        // Convert file to base64
+        const arrayBuffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        const base64 = btoa(String.fromCharCode(...bytes));
+        const dataUri = `data:${file.type};base64,${base64}`;
 
-        // Upload to Google Drive using REST API
-        const uploadResponse = await fetch(
-          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': `multipart/related; boundary=${boundary}`,
-              'Content-Length': multipartBody.length.toString(),
-            },
-            body: multipartBody,
-          }
-        );
+        // Create upload signature
+        const timestamp = Math.floor(Date.now() / 1000);
+        const folder = 'uploads';
+        
+        // Create signature string (alphabetical order of parameters)
+        const signatureString = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(signatureString);
+        const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Prepare upload to Cloudinary
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', dataUri);
+        uploadFormData.append('api_key', apiKey);
+        uploadFormData.append('timestamp', timestamp.toString());
+        uploadFormData.append('folder', folder);
+        uploadFormData.append('signature', signature);
+
+        console.log(`Uploading ${fileName} to Cloudinary...`);
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'POST',
+          body: uploadFormData,
+        });
 
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text();
-          console.error(`Upload failed for ${file.name}:`, errorText);
+          console.error(`Cloudinary upload failed for ${fileName}:`, errorText);
           throw new Error(`Upload failed: ${errorText}`);
         }
 
-        const responseData = await uploadResponse.json();
+        const result = await uploadResponse.json();
+        console.log(`Successfully uploaded ${fileName} to Cloudinary`);
 
         results.push({
-          name: file.name,
+          name: fileName,
           success: true,
-          fileId: responseData.id,
+          url: result.secure_url,
+          publicId: result.public_id,
+          format: result.format,
+          width: result.width,
+          height: result.height,
         });
       } catch (error) {
-        console.error(`Error uploading ${file.name}:`, error);
+        console.error(`Error uploading ${fileName}:`, error);
         results.push({
-          name: file.name,
+          name: fileName,
           success: false,
           error: error instanceof Error ? error.message : 'Upload failed',
         });
@@ -251,7 +152,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Upload error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
