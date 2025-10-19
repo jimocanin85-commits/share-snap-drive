@@ -40,7 +40,7 @@ const UploadPage = () => {
 
     setUploading(true);
     setUploadProgress(0);
-    setUploadStatus("Forbereder billeder...");
+    setUploadStatus("");
 
     try {
       // Step 1: Compress large files (over 10MB to stay within Cloudinary free tier)
@@ -68,16 +68,18 @@ const UploadPage = () => {
         })
       );
 
-      setUploadStatus("Uploader billeder...");
-
       // Step 2: Get upload signatures from edge function
+      console.log('Getting signatures for', processedFiles.length, 'files');
       const { data: sigData, error: sigError } = await supabase.functions.invoke('upload', {
         body: { fileCount: processedFiles.length }
       });
 
       if (sigError || !sigData?.signatures) {
+        console.error('Failed to get signatures:', sigError);
         throw new Error('Failed to get upload signatures');
       }
+
+      console.log('Got signatures, starting uploads');
 
       // Step 3: Upload each file directly to Cloudinary in parallel
       const uploadPromises = processedFiles.map(async (file, index) => {
@@ -93,6 +95,8 @@ const UploadPage = () => {
 
           const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
           
+          console.log(`Starting upload for ${file.name}`);
+          
           const response = await fetch(uploadUrl, {
             method: 'POST',
             body: formData,
@@ -104,6 +108,7 @@ const UploadPage = () => {
             return { success: false, name: file.name, error: errorText };
           }
 
+          console.log(`Successfully uploaded ${file.name}`);
           return { success: true, name: file.name, data: await response.json() };
         } catch (error) {
           console.error(`Error uploading ${file.name}:`, error);
@@ -117,10 +122,12 @@ const UploadPage = () => {
         uploadPromises.map(async (promise) => {
           const result = await promise;
           completed++;
-          setUploadProgress(Math.round((completed / selectedFiles.length) * 100));
+          setUploadProgress(Math.round((completed / processedFiles.length) * 100));
           return result;
         })
       );
+
+      console.log('All uploads completed:', results);
 
       // Count successes
       const successCount = results.filter(r => r.success).length;
