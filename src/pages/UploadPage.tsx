@@ -39,7 +39,7 @@ const UploadPage = () => {
 
     setUploading(true);
     setUploadProgress(0);
-    setUploadStatus("Forbereder upload...");
+    setUploadStatus("");
     
     const formData = new FormData();
     selectedFiles.forEach((file) => {
@@ -60,7 +60,6 @@ const UploadPage = () => {
           if (e.lengthComputable) {
             const percentComplete = Math.round((e.loaded / e.total) * 100);
             setUploadProgress(percentComplete);
-            setUploadStatus(`Uploader billeder... ${percentComplete}%`);
           }
         });
         
