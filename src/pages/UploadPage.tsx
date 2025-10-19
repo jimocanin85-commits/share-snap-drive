@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle2, AlertCircle, Image as ImageIcon, X } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import jasSariPhoto from "@/assets/jas-sari-photo.jpg";
 
 const UploadPage = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -88,17 +89,21 @@ const UploadPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center p-4 sm:p-6">
       <Card className="w-full max-w-2xl p-6 sm:p-8 lg:p-10 shadow-[var(--shadow-card)] border-border/50 animate-fade-in">
         <div className="text-center space-y-6 sm:space-y-8">
-          {/* Logo */}
+          {/* Photo */}
           <div className="flex justify-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-[var(--shadow-button)]">
-              <ImageIcon className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden shadow-[var(--shadow-button)] ring-4 ring-primary/20">
+              <img 
+                src={jasSariPhoto} 
+                alt="Jas & Sari" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
 
           {/* Title */}
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
-              Del dine billeder 📸
+              Jas&Sari 40 års
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Vælg billeder fra din telefon og tryk Upload
