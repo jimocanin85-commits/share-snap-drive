@@ -149,7 +149,6 @@ const UploadPage = () => {
                 type="file"
                 multiple
                 accept="image/*"
-                capture="environment"
                 onChange={handleFileSelect}
                 className="hidden"
               />
