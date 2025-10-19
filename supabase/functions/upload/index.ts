@@ -21,7 +21,7 @@ serve(async (req) => {
       throw new Error('Missing Cloudinary credentials');
     }
 
-    console.log('Processing upload request...');
+    console.log('Processing upload request with updated credentials...');
 
     // Parse form data
     const formData = await req.formData();
