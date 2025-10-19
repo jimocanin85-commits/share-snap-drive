@@ -40,45 +40,52 @@ const UploadPage = () => {
     setUploading(true);
     setUploadProgress(0);
     setUploadStatus("");
-    
-    const formData = new FormData();
-    selectedFiles.forEach((file) => {
-      formData.append('files', file);
-    });
 
     try {
-      const supabaseUrl = 'https://yqbnwxwqlekqwdooevyb.supabase.co';
-      const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxYm53eHdxbGVrcXdkb29ldnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxOTI1MTksImV4cCI6MjA3NTc2ODUxOX0.WBP2B6EHr1IEpMMEUOpQYonNoNyVF7HNKKrCgr_dQZI';
-      const functionUrl = `${supabaseUrl}/functions/v1/upload`;
-      
-      // Use XMLHttpRequest to track upload progress
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        
-        // Track upload progress
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100);
-            setUploadProgress(percentComplete);
-          }
-        });
-        
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            reject(new Error(xhr.statusText || 'Upload fejlede'));
-          }
-        });
-        
-        xhr.addEventListener('error', () => {
-          reject(new Error('Upload fejlede'));
-        });
-        
-        xhr.open('POST', functionUrl);
-        xhr.setRequestHeader('Authorization', `Bearer ${supabaseAnonKey}`);
-        xhr.send(formData);
+      // Step 1: Get upload signatures from edge function
+      const { data: sigData, error: sigError } = await supabase.functions.invoke('upload', {
+        body: { fileCount: selectedFiles.length }
       });
+
+      if (sigError || !sigData?.signatures) {
+        throw new Error('Failed to get upload signatures');
+      }
+
+      // Step 2: Upload each file directly to Cloudinary
+      const uploadPromises = selectedFiles.map(async (file, index) => {
+        const sig = sigData.signatures[index];
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', sig.apiKey);
+        formData.append('timestamp', sig.timestamp.toString());
+        formData.append('folder', sig.folder);
+        formData.append('signature', sig.signature);
+
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
+        
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed for ${file.name}`);
+        }
+
+        return await response.json();
+      });
+
+      // Track progress as files complete
+      let completed = 0;
+      const results = [];
+      
+      for (const promise of uploadPromises) {
+        const result = await promise;
+        results.push(result);
+        completed++;
+        setUploadProgress(Math.round((completed / selectedFiles.length) * 100));
+      }
 
       setUploadStatus("✅ Tak! Dine billeder er modtaget.");
       setIsSuccess(true);
