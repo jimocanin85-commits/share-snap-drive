@@ -40,7 +40,6 @@ serve(async (req) => {
 
     console.log(`Received ${files.length} files`);
 
-    const results = [];
     const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
     const ALLOWED_TYPES = [
       'image/jpeg', 
@@ -54,9 +53,9 @@ serve(async (req) => {
       'image/tiff'
     ];
 
-    // Process each file
-    for (const file of files) {
-      if (!(file instanceof File)) continue;
+    // Process all files in parallel for faster uploads
+    const uploadPromises = Array.from(files).map(async (file) => {
+      if (!(file instanceof File)) return null;
 
       const fileName = file.name;
       console.log(`Processing file: ${fileName}`);
@@ -64,22 +63,20 @@ serve(async (req) => {
       try {
         // Validate file type
         if (!ALLOWED_TYPES.includes(file.type)) {
-          results.push({
+          return {
             name: fileName,
             success: false,
             error: 'Invalid file type. Only images (JPG, PNG, WEBP, HEIC, GIF, etc.) allowed.',
-          });
-          continue;
+          };
         }
 
         // Validate file size
         if (file.size > MAX_FILE_SIZE) {
-          results.push({
+          return {
             name: fileName,
             success: false,
             error: 'File too large. Maximum size is 15MB.',
-          });
-          continue;
+          };
         }
 
         // Convert file to base64 (handle large files properly)
@@ -133,7 +130,7 @@ serve(async (req) => {
         const result = await uploadResponse.json();
         console.log(`Successfully uploaded ${fileName} to Cloudinary`);
 
-        results.push({
+        return {
           name: fileName,
           success: true,
           url: result.secure_url,
@@ -141,16 +138,20 @@ serve(async (req) => {
           format: result.format,
           width: result.width,
           height: result.height,
-        });
+        };
       } catch (error) {
         console.error(`Error uploading ${fileName}:`, error);
-        results.push({
+        return {
           name: fileName,
           success: false,
           error: error instanceof Error ? error.message : 'Upload failed',
-        });
+        };
       }
-    }
+    });
+
+    // Wait for all uploads to complete in parallel
+    const uploadResults = await Promise.all(uploadPromises);
+    const results = uploadResults.filter(r => r !== null);
 
     // Check if any uploads succeeded
     const successCount = results.filter(r => r.success).length;
