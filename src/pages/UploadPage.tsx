@@ -103,7 +103,7 @@ const UploadPage = () => {
           {/* Title */}
           <div className="space-y-1 sm:space-y-2">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-              Jas&Sari 40 års
+              Sari&Jas 40 års
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground px-4">
               Vælg billeder fra din telefon og tryk Upload
