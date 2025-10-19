@@ -214,10 +214,7 @@ const UploadPage = () => {
               className="w-full h-14 sm:h-16 text-base sm:text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-[var(--shadow-button)] transition-all disabled:opacity-50 touch-manipulation active:scale-[0.97]"
             >
               {uploading ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Uploader...
-                </span>
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
               ) : (
                 <>
                   <Upload className="w-5 h-5 mr-2" />
