@@ -20,7 +20,7 @@ const UploadPage = () => {
     
     // Check if more than 10 files selected
     if (files.length > 10) {
-      toast.error("Du kan maksimalt vælge 10 billeder ad gangen");
+      toast.error("Du kan maksimalt vælge 10 filer ad gangen");
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -28,9 +28,9 @@ const UploadPage = () => {
     }
     
     const validFiles = files.filter(file => {
-      const isValid = file.type.startsWith('image/');
+      const isValid = file.type.startsWith('image/') || file.type.startsWith('video/');
       if (!isValid) {
-        toast.error(`${file.name} er ikke et gyldigt billede`);
+        toast.error(`${file.name} er ikke en gyldig fil (kun billeder og videoer)`);
       }
       return isValid;
     });
@@ -53,13 +53,14 @@ const UploadPage = () => {
     setUploadStatus("");
 
     try {
-      // Step 1: Compress large files (over 10MB to stay within Cloudinary free tier)
+      // Step 1: Compress large image files (over 10MB, skip videos)
       const MAX_SIZE_MB = 10;
       const processedFiles = await Promise.all(
         selectedFiles.map(async (file) => {
           const fileSizeMB = file.size / 1024 / 1024;
+          const isImage = file.type.startsWith('image/');
           
-          if (fileSizeMB > MAX_SIZE_MB) {
+          if (isImage && fileSizeMB > MAX_SIZE_MB) {
             try {
               const compressed = await imageCompression(file, {
                 maxSizeMB: MAX_SIZE_MB,
@@ -95,6 +96,7 @@ const UploadPage = () => {
       const uploadPromises = processedFiles.map(async (file, index) => {
         try {
           const sig = sigData.signatures[index];
+          const isVideo = file.type.startsWith('video/');
           
           const formData = new FormData();
           formData.append('file', file);
@@ -103,9 +105,11 @@ const UploadPage = () => {
           formData.append('folder', sig.folder);
           formData.append('signature', sig.signature);
 
-          const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
+          // Use different endpoint for videos vs images
+          const resourceType = isVideo ? 'video' : 'image';
+          const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/${resourceType}/upload`;
           
-          console.log(`Starting upload for ${file.name}`);
+          console.log(`Starting upload for ${file.name} as ${resourceType}`);
           
           const response = await fetch(uploadUrl, {
             method: 'POST',
@@ -148,12 +152,12 @@ const UploadPage = () => {
       }
 
       if (failCount > 0) {
-        setUploadStatus(`⚠️ ${successCount} billede(r) uploadet, ${failCount} fejlede.`);
-        toast.warning(`${successCount} af ${selectedFiles.length} billeder uploadet`);
+        setUploadStatus(`⚠️ ${successCount} fil(er) uploadet, ${failCount} fejlede.`);
+        toast.warning(`${successCount} af ${selectedFiles.length} filer uploadet`);
       } else {
-        setUploadStatus("✅ Tak! Dine billeder er modtaget.");
+        setUploadStatus("✅ Tak! Dine filer er modtaget.");
         setIsSuccess(true);
-        toast.success(`${successCount} billede${successCount > 1 ? 'r' : ''} uploadet!`);
+        toast.success(`${successCount} fil${successCount > 1 ? 'er' : ''} uploadet!`);
       }
       
       setUploadProgress(100);
@@ -213,7 +217,7 @@ const UploadPage = () => {
                   Tryk her for at vælge billeder
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                  Alle billedformater understøttes (JPG, PNG, HEIC, etc.)
+                  Billeder og videoer understøttes (JPG, PNG, HEIC, MP4, MOV, etc.)
                 </p>
               </div>
               <input
@@ -221,7 +225,7 @@ const UploadPage = () => {
                 id="file-upload"
                 type="file"
                 multiple
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -232,7 +236,7 @@ const UploadPage = () => {
               <div className="bg-secondary/50 rounded-xl p-4 sm:p-6 text-left animate-fade-in">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <p className="text-sm sm:text-base font-semibold text-foreground">
-                    Valgte billeder ({selectedFiles.length})
+                    Valgte filer ({selectedFiles.length})
                   </p>
                   <Button
                     variant="ghost"
@@ -249,12 +253,20 @@ const UploadPage = () => {
                       key={index} 
                       className="relative group rounded-lg overflow-hidden bg-muted aspect-square touch-manipulation"
                     >
-                      <img 
-                        src={URL.createObjectURL(file)} 
-                        alt={file.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                      {file.type.startsWith('video/') ? (
+                        <video 
+                          src={URL.createObjectURL(file)} 
+                          className="w-full h-full object-cover"
+                          muted
+                        />
+                      ) : (
+                        <img 
+                          src={URL.createObjectURL(file)} 
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
