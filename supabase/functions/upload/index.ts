@@ -42,7 +42,17 @@ serve(async (req) => {
 
     const results = [];
     const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
-    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const ALLOWED_TYPES = [
+      'image/jpeg', 
+      'image/jpg',
+      'image/png', 
+      'image/webp', 
+      'image/heic',
+      'image/heif',
+      'image/gif',
+      'image/bmp',
+      'image/tiff'
+    ];
 
     // Process each file
     for (const file of files) {
@@ -57,7 +67,7 @@ serve(async (req) => {
           results.push({
             name: fileName,
             success: false,
-            error: 'Invalid file type. Only JPG, PNG, and WEBP allowed.',
+            error: 'Invalid file type. Only images (JPG, PNG, WEBP, HEIC, GIF, etc.) allowed.',
           });
           continue;
         }

@@ -122,7 +122,7 @@ const UploadPage = () => {
                   Klik for at vælge billeder
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  JPG, PNG eller WEBP (maks 15MB per billede)
+                  Alle billedformater understøttes (JPG, PNG, HEIC, etc.)
                 </p>
               </div>
               <input
