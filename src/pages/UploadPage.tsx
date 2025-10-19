@@ -11,6 +11,7 @@ const UploadPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +38,8 @@ const UploadPage = () => {
     }
 
     setUploading(true);
-    setUploadStatus("Uploader billeder...");
+    setUploadProgress(0);
+    setUploadStatus("Forbereder upload...");
     
     const formData = new FormData();
     selectedFiles.forEach((file) => {
@@ -45,33 +47,49 @@ const UploadPage = () => {
     });
 
     try {
-      // Get Supabase URL and anon key from client
       const supabaseUrl = 'https://yqbnwxwqlekqwdooevyb.supabase.co';
       const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxYm53eHdxbGVrcXdkb29ldnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxOTI1MTksImV4cCI6MjA3NTc2ODUxOX0.WBP2B6EHr1IEpMMEUOpQYonNoNyVF7HNKKrCgr_dQZI';
       const functionUrl = `${supabaseUrl}/functions/v1/upload`;
       
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-        },
-        body: formData,
+      // Use XMLHttpRequest to track upload progress
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            setUploadProgress(percentComplete);
+            setUploadStatus(`Uploader billeder... ${percentComplete}%`);
+          }
+        });
+        
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(xhr.statusText || 'Upload fejlede'));
+          }
+        });
+        
+        xhr.addEventListener('error', () => {
+          reject(new Error('Upload fejlede'));
+        });
+        
+        xhr.open('POST', functionUrl);
+        xhr.setRequestHeader('Authorization', `Bearer ${supabaseAnonKey}`);
+        xhr.send(formData);
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Upload fejlede' }));
-        throw new Error(errorData.error || 'Upload fejlede');
-      }
-
-      const data = await response.json();
 
       setUploadStatus("✅ Tak! Dine billeder er modtaget.");
       setIsSuccess(true);
+      setUploadProgress(100);
       toast.success(`${selectedFiles.length} billede${selectedFiles.length > 1 ? 'r' : ''} uploadet!`);
       
       // Clear selection after short delay
       setTimeout(() => {
         setSelectedFiles([]);
+        setUploadProgress(0);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -79,6 +97,7 @@ const UploadPage = () => {
     } catch (error) {
       console.error('Upload error:', error);
       setUploadStatus("❌ Der opstod en fejl. Prøv venligst igen.");
+      setUploadProgress(0);
       toast.error("Upload fejlede. Prøv igen.");
     } finally {
       setUploading(false);
@@ -206,6 +225,21 @@ const UploadPage = () => {
                 </>
               )}
             </Button>
+
+            {/* Progress Bar */}
+            {uploading && (
+              <div className="space-y-2 animate-fade-in">
+                <div className="w-full bg-secondary/50 rounded-full h-3 overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-300 ease-out rounded-full"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-sm text-center text-muted-foreground font-medium">
+                  {uploadProgress}% færdig
+                </p>
+              </div>
+            )}
 
             {/* Status message */}
             {uploadStatus && (
