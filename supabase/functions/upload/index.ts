@@ -88,7 +88,7 @@ serve(async (req) => {
 
         // Create upload signature
         const timestamp = Math.floor(Date.now() / 1000);
-        const folder = 'uploads';
+        const folder = 'JasSari40aars';
         
         // Create signature string (alphabetical order of parameters)
         const signatureString = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
