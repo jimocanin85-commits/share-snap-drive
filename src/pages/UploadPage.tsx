@@ -51,46 +51,67 @@ const UploadPage = () => {
         throw new Error('Failed to get upload signatures');
       }
 
-      // Step 2: Upload each file directly to Cloudinary
+      // Step 2: Upload each file directly to Cloudinary in parallel
       const uploadPromises = selectedFiles.map(async (file, index) => {
-        const sig = sigData.signatures[index];
-        
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('api_key', sig.apiKey);
-        formData.append('timestamp', sig.timestamp.toString());
-        formData.append('folder', sig.folder);
-        formData.append('signature', sig.signature);
+        try {
+          const sig = sigData.signatures[index];
+          
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('api_key', sig.apiKey);
+          formData.append('timestamp', sig.timestamp.toString());
+          formData.append('folder', sig.folder);
+          formData.append('signature', sig.signature);
 
-        const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
-        
-        const response = await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
-        });
+          const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
+          
+          const response = await fetch(uploadUrl, {
+            method: 'POST',
+            body: formData,
+          });
 
-        if (!response.ok) {
-          throw new Error(`Upload failed for ${file.name}`);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Upload failed for ${file.name}:`, errorText);
+            return { success: false, name: file.name, error: errorText };
+          }
+
+          return { success: true, name: file.name, data: await response.json() };
+        } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          return { success: false, name: file.name, error: String(error) };
         }
-
-        return await response.json();
       });
 
-      // Track progress as files complete
+      // Wait for all uploads with progress tracking
       let completed = 0;
-      const results = [];
-      
-      for (const promise of uploadPromises) {
-        const result = await promise;
-        results.push(result);
-        completed++;
-        setUploadProgress(Math.round((completed / selectedFiles.length) * 100));
+      const results = await Promise.all(
+        uploadPromises.map(async (promise) => {
+          const result = await promise;
+          completed++;
+          setUploadProgress(Math.round((completed / selectedFiles.length) * 100));
+          return result;
+        })
+      );
+
+      // Count successes
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.filter(r => !r.success).length;
+
+      if (successCount === 0) {
+        throw new Error('Alle uploads fejlede');
       }
 
-      setUploadStatus("✅ Tak! Dine billeder er modtaget.");
-      setIsSuccess(true);
+      if (failCount > 0) {
+        setUploadStatus(`⚠️ ${successCount} billede(r) uploadet, ${failCount} fejlede.`);
+        toast.warning(`${successCount} af ${selectedFiles.length} billeder uploadet`);
+      } else {
+        setUploadStatus("✅ Tak! Dine billeder er modtaget.");
+        setIsSuccess(true);
+        toast.success(`${successCount} billede${successCount > 1 ? 'r' : ''} uploadet!`);
+      }
+      
       setUploadProgress(100);
-      toast.success(`${selectedFiles.length} billede${selectedFiles.length > 1 ? 'r' : ''} uploadet!`);
       
       // Clear selection after short delay
       setTimeout(() => {
