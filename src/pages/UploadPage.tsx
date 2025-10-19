@@ -5,6 +5,7 @@ import { Upload, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import jasSariPhoto from "@/assets/jas-sari-photo.jpg";
+import imageCompression from "browser-image-compression";
 
 const UploadPage = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -39,20 +40,47 @@ const UploadPage = () => {
 
     setUploading(true);
     setUploadProgress(0);
-    setUploadStatus("");
+    setUploadStatus("Forbereder billeder...");
 
     try {
-      // Step 1: Get upload signatures from edge function
+      // Step 1: Compress large files (over 10MB to stay within Cloudinary free tier)
+      const MAX_SIZE_MB = 10;
+      const processedFiles = await Promise.all(
+        selectedFiles.map(async (file) => {
+          const fileSizeMB = file.size / 1024 / 1024;
+          
+          if (fileSizeMB > MAX_SIZE_MB) {
+            try {
+              const compressed = await imageCompression(file, {
+                maxSizeMB: MAX_SIZE_MB,
+                maxWidthOrHeight: 4096,
+                useWebWorker: true,
+              });
+              console.log(`Compressed ${file.name} from ${fileSizeMB.toFixed(2)}MB to ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+              return compressed;
+            } catch (error) {
+              console.error(`Failed to compress ${file.name}, using original:`, error);
+              return file;
+            }
+          }
+          
+          return file;
+        })
+      );
+
+      setUploadStatus("Uploader billeder...");
+
+      // Step 2: Get upload signatures from edge function
       const { data: sigData, error: sigError } = await supabase.functions.invoke('upload', {
-        body: { fileCount: selectedFiles.length }
+        body: { fileCount: processedFiles.length }
       });
 
       if (sigError || !sigData?.signatures) {
         throw new Error('Failed to get upload signatures');
       }
 
-      // Step 2: Upload each file directly to Cloudinary in parallel
-      const uploadPromises = selectedFiles.map(async (file, index) => {
+      // Step 3: Upload each file directly to Cloudinary in parallel
+      const uploadPromises = processedFiles.map(async (file, index) => {
         try {
           const sig = sigData.signatures[index];
           
