@@ -94,11 +94,21 @@ serve(async (req) => {
     // Get environment variables
     const clientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL');
     const privateKey = Deno.env.get('GOOGLE_PRIVATE_KEY');
-    const folderId = Deno.env.get('GOOGLE_DRIVE_FOLDER_ID');
+    let folderId = Deno.env.get('GOOGLE_DRIVE_FOLDER_ID');
 
     if (!clientEmail || !privateKey || !folderId) {
       throw new Error('Missing required environment variables');
     }
+
+    // Extract folder ID if it's a full URL
+    if (folderId.includes('drive.google.com')) {
+      const match = folderId.match(/folders\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        folderId = match[1];
+      }
+    }
+    
+    console.log('Using folder ID:', folderId);
 
     // Parse form data
     const formData = await req.formData();
