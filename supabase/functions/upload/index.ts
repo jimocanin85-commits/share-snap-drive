@@ -53,8 +53,11 @@ serve(async (req) => {
       'image/tiff'
     ];
 
-    // Process all files in parallel for faster uploads
-    const uploadPromises = Array.from(files).map(async (file) => {
+    // Process files in batches of 3 to avoid CPU timeout
+    const BATCH_SIZE = 3;
+    const results = [];
+    
+    const processFile = async (file: File) => {
       if (!(file instanceof File)) return null;
 
       const fileName = file.name;
@@ -147,11 +150,14 @@ serve(async (req) => {
           error: error instanceof Error ? error.message : 'Upload failed',
         };
       }
-    });
+    };
 
-    // Wait for all uploads to complete in parallel
-    const uploadResults = await Promise.all(uploadPromises);
-    const results = uploadResults.filter(r => r !== null);
+    // Process files in batches
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = Array.from(files).slice(i, i + BATCH_SIZE).filter((f): f is File => f instanceof File);
+      const batchResults = await Promise.all(batch.map(processFile));
+      results.push(...batchResults.filter(r => r !== null));
+    }
 
     // Check if any uploads succeeded
     const successCount = results.filter(r => r.success).length;
