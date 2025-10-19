@@ -17,6 +17,16 @@ const UploadPage = () => {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    
+    // Check if more than 10 files selected
+    if (files.length > 10) {
+      toast.error("Du kan maksimalt vælge 10 billeder ad gangen");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+    
     const validFiles = files.filter(file => {
       const isValid = file.type.startsWith('image/');
       if (!isValid) {
