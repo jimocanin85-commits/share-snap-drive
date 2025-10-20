@@ -21,8 +21,17 @@ serve(async (req) => {
       throw new Error('Missing Cloudinary credentials');
     }
 
-    // Parse request body to get file count
-    const body = await req.json();
+    // Parse request body to get file count with better error handling
+    let body;
+    try {
+      const text = await req.text();
+      console.log('Received request body:', text);
+      body = text ? JSON.parse(text) : {};
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      body = {};
+    }
+    
     const fileCount = body.fileCount || 1;
 
     console.log(`Generating signatures for ${fileCount} files`);
