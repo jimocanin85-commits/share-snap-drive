@@ -41,9 +41,9 @@ serve(async (req) => {
     console.log(`Found ${data.resources?.length || 0} images`);
     console.log('Cloudinary response:', JSON.stringify(data));
 
-    // Return the image URLs with high quality transformations
+    // Return the image URLs with optimized quality for faster loading
     const images = data.resources?.map((resource: any) => ({
-      url: resource.secure_url.replace('/upload/', '/upload/q_auto:best,f_auto/'),
+      url: resource.secure_url.replace('/upload/', '/upload/q_auto:good,f_auto/'),
       publicId: resource.public_id,
     })) || [];
 

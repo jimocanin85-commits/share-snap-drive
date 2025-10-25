@@ -19,22 +19,23 @@ const SlideshowPage = () => {
         if (data?.images && data.images.length > 0) {
           const imageUrls = data.images.map((img: any) => img.url);
           
-          // Preload all images with timeout fallback
-          const preloadPromises = imageUrls.map((url: string) => {
-            return Promise.race([
-              new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = url;
-              }),
-              new Promise((_, reject) => setTimeout(() => reject('timeout'), 10000))
-            ]).catch(() => console.warn('Failed to preload:', url));
+          // Preload first image immediately
+          const firstImage = new Image();
+          firstImage.src = imageUrls[0];
+          await new Promise((resolve) => {
+            firstImage.onload = resolve;
+            firstImage.onerror = resolve;
           });
           
-          await Promise.allSettled(preloadPromises);
+          // Set images and stop loading immediately after first image
           setImages(imageUrls);
           setLoading(false);
+          
+          // Continue preloading rest in background
+          imageUrls.slice(1).forEach((url: string) => {
+            const img = new Image();
+            img.src = url;
+          });
         } else {
           setError('No images found');
           setLoading(false);
