@@ -120,10 +120,11 @@ const SlideshowPage = () => {
       } catch (err) {
         console.error('Error fetching images:', err);
         
-        // Retry up to 3 times on initial load
-        if (images.length === 0 && retryCount < 3) {
-          console.log(`Retrying in 2 seconds... (attempt ${retryCount + 1}/3)`);
-          setTimeout(() => fetchAndPreloadImages(retryCount + 1), 2000);
+        // Retry up to 5 times on initial load with longer delays to handle cold starts
+        if (images.length === 0 && retryCount < 5) {
+          const delay = Math.min(5000 * (retryCount + 1), 15000); // 5s, 10s, 15s, 15s, 15s
+          console.log(`Retrying in ${delay/1000} seconds... (attempt ${retryCount + 1}/5)`);
+          setTimeout(() => fetchAndPreloadImages(retryCount + 1), delay);
           return;
         }
         
