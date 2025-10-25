@@ -9,37 +9,62 @@ const SlideshowPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Prevent screen from sleeping
+  // Prevent screen from sleeping - aggressive wake lock with fallback
   useEffect(() => {
     let wakeLock: any = null;
+    let wakeLockInterval: NodeJS.Timeout | null = null;
 
     const requestWakeLock = async () => {
       try {
         if ('wakeLock' in navigator) {
           wakeLock = await (navigator as any).wakeLock.request('screen');
           console.log('Wake lock activated');
+          
+          // Re-request when released
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake lock released, re-requesting...');
+            setTimeout(requestWakeLock, 100);
+          });
         }
       } catch (err) {
         console.error('Wake lock error:', err);
       }
     };
 
+    // Initial request
     requestWakeLock();
 
-    // Re-request wake lock if visibility changes
+    // Periodically re-request wake lock every 10 seconds as backup
+    wakeLockInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        requestWakeLock();
+      }
+    }, 10000);
+
+    // Re-request wake lock on any user interaction
+    const handleInteraction = () => requestWakeLock();
     const handleVisibilityChange = () => {
-      if (wakeLock !== null && document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible') {
         requestWakeLock();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+    document.addEventListener('mousemove', handleInteraction);
 
     return () => {
       if (wakeLock !== null) {
         wakeLock.release();
       }
+      if (wakeLockInterval) {
+        clearInterval(wakeLockInterval);
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('mousemove', handleInteraction);
     };
   }, []);
 
