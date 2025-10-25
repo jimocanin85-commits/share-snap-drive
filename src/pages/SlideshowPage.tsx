@@ -72,7 +72,9 @@ const SlideshowPage = () => {
     const fetchAndPreloadImages = async (retryCount = 0) => {
       try {
         console.log(`Fetching images (attempt ${retryCount + 1})...`);
-        const { data, error } = await supabase.functions.invoke('get-images');
+        const { data, error } = await supabase.functions.invoke('get-images', {
+          body: {}
+        });
         
         if (error) {
           console.error('Supabase function error:', error);
