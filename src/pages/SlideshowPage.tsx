@@ -9,14 +9,27 @@ const SlideshowPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchImages = async () => {
+    const fetchAndPreloadImages = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('get-images');
         
         if (error) throw error;
         
         if (data?.images && data.images.length > 0) {
-          setImages(data.images.map((img: any) => img.url));
+          const imageUrls = data.images.map((img: any) => img.url);
+          
+          // Preload all images
+          const preloadPromises = imageUrls.map((url: string) => {
+            return new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = url;
+            });
+          });
+          
+          await Promise.all(preloadPromises);
+          setImages(imageUrls);
         } else {
           setError('No images found');
         }
@@ -28,7 +41,7 @@ const SlideshowPage = () => {
       }
     };
 
-    fetchImages();
+    fetchAndPreloadImages();
   }, []);
 
   useEffect(() => {
