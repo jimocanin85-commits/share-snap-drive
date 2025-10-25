@@ -89,7 +89,7 @@ const SlideshowPage = () => {
         key={currentIndex}
         src={images[currentIndex]}
         alt={`Slide ${currentIndex + 1}`}
-        className="w-full h-full object-cover animate-fade-in"
+        className="w-full h-full object-contain animate-fade-in"
       />
       <div className="absolute bottom-4 right-4 flex items-center gap-2">
         <Button
