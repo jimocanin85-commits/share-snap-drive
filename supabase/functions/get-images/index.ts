@@ -39,6 +39,7 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log(`Found ${data.resources?.length || 0} images`);
+    console.log('Cloudinary response:', JSON.stringify(data));
 
     // Return the image URLs with high quality transformations
     const images = data.resources?.map((resource: any) => ({
