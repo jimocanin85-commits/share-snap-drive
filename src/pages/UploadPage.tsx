@@ -1,13 +1,15 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle2, AlertCircle, X } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, X, Play } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import jasSariPhoto from "@/assets/jas-sari-photo.jpg";
 import imageCompression from "browser-image-compression";
+import { useNavigate } from "react-router-dom";
 
 const UploadPage = () => {
+  const navigate = useNavigate();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>("");
@@ -201,6 +203,17 @@ const UploadPage = () => {
               Vælg billeder fra din telefon og tryk Upload
             </p>
           </div>
+
+          {/* View Slideshow Button */}
+          <Button
+            onClick={() => navigate('/slideshow')}
+            variant="outline"
+            size="lg"
+            className="w-full sm:w-auto"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Se Slideshow
+          </Button>
 
           {/* File input */}
           <div className="space-y-4 sm:space-y-6">
