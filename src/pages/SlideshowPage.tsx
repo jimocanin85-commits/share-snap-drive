@@ -69,14 +69,21 @@ const SlideshowPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAndPreloadImages = async () => {
+    const fetchAndPreloadImages = async (retryCount = 0) => {
       try {
+        console.log(`Fetching images (attempt ${retryCount + 1})...`);
         const { data, error } = await supabase.functions.invoke('get-images');
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase function error:', error);
+          throw error;
+        }
+        
+        console.log('Received data:', data);
         
         if (data?.images && data.images.length > 0) {
           const imageUrls = data.images.map((img: any) => img.url);
+          console.log(`Successfully fetched ${imageUrls.length} images`);
           
           // Only preload first image on initial load
           if (images.length === 0) {
@@ -101,6 +108,7 @@ const SlideshowPage = () => {
           // Clear any previous errors on successful fetch
           setError(null);
         } else {
+          console.warn('No images in response');
           // Only show error on initial load
           if (images.length === 0) {
             setError('No images found');
@@ -109,9 +117,17 @@ const SlideshowPage = () => {
         }
       } catch (err) {
         console.error('Error fetching images:', err);
-        // Only show error on initial load, silently fail on refresh
+        
+        // Retry up to 3 times on initial load
+        if (images.length === 0 && retryCount < 3) {
+          console.log(`Retrying in 2 seconds... (attempt ${retryCount + 1}/3)`);
+          setTimeout(() => fetchAndPreloadImages(retryCount + 1), 2000);
+          return;
+        }
+        
+        // Only show error on initial load after retries exhausted
         if (images.length === 0) {
-          setError('Failed to load images');
+          setError('Failed to load images. Please refresh the page.');
           setLoading(false);
         } else {
           console.log('Refresh failed, continuing with existing images');
@@ -119,11 +135,11 @@ const SlideshowPage = () => {
       }
     };
 
-    // Initial fetch
+    // Initial fetch with retry
     fetchAndPreloadImages();
     
     // Refresh every 60 seconds (less aggressive)
-    const refreshInterval = setInterval(fetchAndPreloadImages, 60000);
+    const refreshInterval = setInterval(() => fetchAndPreloadImages(), 60000);
     
     return () => clearInterval(refreshInterval);
   }, []);
