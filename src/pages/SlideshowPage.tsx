@@ -157,27 +157,10 @@ const SlideshowPage = () => {
   }, [images.length]);
 
   const toggleFullscreen = () => {
-    const elem = document.documentElement as any;
-    
-    if (!document.fullscreenElement && !elem.webkitFullscreenElement && !elem.mozFullScreenElement) {
-      // Try standard API first, then webkit (Safari/Samsung), then moz (older Firefox)
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      } else if (elem.mozRequestFullScreen) {
-        elem.mozRequestFullScreen();
-      }
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
     } else {
-      // Exit fullscreen with vendor prefixes
-      const doc = document as any;
-      if (doc.exitFullscreen) {
-        doc.exitFullscreen();
-      } else if (doc.webkitExitFullscreen) {
-        doc.webkitExitFullscreen();
-      } else if (doc.mozCancelFullScreen) {
-        doc.mozCancelFullScreen();
-      }
+      document.exitFullscreen();
     }
   };
 
