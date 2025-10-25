@@ -42,9 +42,10 @@ serve(async (req) => {
     for (let i = 0; i < fileCount; i++) {
       const timestamp = Math.floor(Date.now() / 1000) + i; // Unique timestamp for each
       const folder = 'JasSari40aars';
+      const tags = 'JasSari40aars';
       
-      // Create signature string
-      const signatureString = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+      // Create signature string - parameters must be in alphabetical order
+      const signatureString = `folder=${folder}&tags=${tags}&timestamp=${timestamp}${apiSecret}`;
       const encoder = new TextEncoder();
       const data = encoder.encode(signatureString);
       const hashBuffer = await crypto.subtle.digest('SHA-1', data);
@@ -55,6 +56,7 @@ serve(async (req) => {
         timestamp,
         signature,
         folder,
+        tags,
         cloudName,
         apiKey,
       });

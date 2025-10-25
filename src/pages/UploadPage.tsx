@@ -101,6 +101,7 @@ const UploadPage = () => {
           formData.append('api_key', sig.apiKey);
           formData.append('timestamp', sig.timestamp.toString());
           formData.append('folder', sig.folder);
+          formData.append('tags', sig.tags);
           formData.append('signature', sig.signature);
 
           const uploadUrl = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
