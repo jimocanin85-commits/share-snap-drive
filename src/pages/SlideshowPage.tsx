@@ -56,7 +56,7 @@ const SlideshowPage = () => {
     const refreshInterval = setInterval(fetchAndPreloadImages, 30000);
     
     return () => clearInterval(refreshInterval);
-  }, [images.length]);
+  }, []);
 
   useEffect(() => {
     if (images.length === 0) return;
