@@ -19,20 +19,22 @@ const SlideshowPage = () => {
         if (data?.images && data.images.length > 0) {
           const imageUrls = data.images.map((img: any) => img.url);
           
-          // Preload first image immediately
-          const firstImage = new Image();
-          firstImage.src = imageUrls[0];
-          await new Promise((resolve) => {
-            firstImage.onload = resolve;
-            firstImage.onerror = resolve;
-          });
+          // Only preload first image on initial load
+          if (images.length === 0) {
+            const firstImage = new Image();
+            firstImage.src = imageUrls[0];
+            await new Promise((resolve) => {
+              firstImage.onload = resolve;
+              firstImage.onerror = resolve;
+            });
+            setLoading(false);
+          }
           
-          // Set images and stop loading immediately after first image
+          // Set images (will update with new images if any)
           setImages(imageUrls);
-          setLoading(false);
           
           // Continue preloading rest in background
-          imageUrls.slice(1).forEach((url: string) => {
+          imageUrls.forEach((url: string) => {
             const img = new Image();
             img.src = url;
           });
@@ -47,8 +49,14 @@ const SlideshowPage = () => {
       }
     };
 
+    // Initial fetch
     fetchAndPreloadImages();
-  }, []);
+    
+    // Refresh every 30 seconds to get new images
+    const refreshInterval = setInterval(fetchAndPreloadImages, 30000);
+    
+    return () => clearInterval(refreshInterval);
+  }, [images.length]);
 
   useEffect(() => {
     if (images.length === 0) return;
