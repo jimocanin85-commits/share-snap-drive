@@ -97,22 +97,33 @@ const SlideshowPage = () => {
             const img = new Image();
             img.src = url;
           });
+          
+          // Clear any previous errors on successful fetch
+          setError(null);
         } else {
-          setError('No images found');
-          setLoading(false);
+          // Only show error on initial load
+          if (images.length === 0) {
+            setError('No images found');
+            setLoading(false);
+          }
         }
       } catch (err) {
         console.error('Error fetching images:', err);
-        setError('Failed to load images');
-        setLoading(false);
+        // Only show error on initial load, silently fail on refresh
+        if (images.length === 0) {
+          setError('Failed to load images');
+          setLoading(false);
+        } else {
+          console.log('Refresh failed, continuing with existing images');
+        }
       }
     };
 
     // Initial fetch
     fetchAndPreloadImages();
     
-    // Refresh every 30 seconds to get new images
-    const refreshInterval = setInterval(fetchAndPreloadImages, 30000);
+    // Refresh every 60 seconds (less aggressive)
+    const refreshInterval = setInterval(fetchAndPreloadImages, 60000);
     
     return () => clearInterval(refreshInterval);
   }, []);
