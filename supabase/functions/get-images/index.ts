@@ -19,11 +19,11 @@ serve(async (req) => {
       throw new Error('Missing Cloudinary credentials');
     }
 
-    // Fetch images with the tag "JasSari40aars" from Cloudinary
+    // Fetch images from the JasSari40aars folder in Cloudinary
     const auth = btoa(`${apiKey}:${apiSecret}`);
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image/tags/JasSari40aars?max_results=500`;
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image?type=upload&prefix=JasSari40aars&max_results=500`;
     
-    console.log('Fetching images from Cloudinary with tag: JasSari40aars');
+    console.log('Fetching images from Cloudinary folder: JasSari40aars');
     
     const response = await fetch(cloudinaryUrl, {
       headers: {
