@@ -40,9 +40,9 @@ serve(async (req) => {
     const data = await response.json();
     console.log(`Found ${data.resources?.length || 0} images`);
 
-    // Return the image URLs
+    // Return the image URLs with high quality transformations
     const images = data.resources?.map((resource: any) => ({
-      url: resource.secure_url,
+      url: resource.secure_url.replace('/upload/', '/upload/q_auto:best,f_auto/'),
       publicId: resource.public_id,
     })) || [];
 
