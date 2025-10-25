@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Maximize } from "lucide-react";
+import { Loader2, Maximize, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const SlideshowPage = () => {
@@ -8,6 +8,7 @@ const SlideshowPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Prevent screen from sleeping - aggressive wake lock with fallback
   useEffect(() => {
@@ -182,6 +183,32 @@ const SlideshowPage = () => {
     }
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      console.log('Manual refresh triggered');
+      const { data, error } = await supabase.functions.invoke('get-images', {
+        body: {}
+      });
+      
+      if (error) {
+        console.error('Refresh error:', error);
+        throw error;
+      }
+      
+      if (data?.images && data.images.length > 0) {
+        const imageUrls = data.images.map((img: any) => img.url);
+        setImages(imageUrls);
+        setCurrentIndex(0);
+        console.log(`Refreshed: ${imageUrls.length} images loaded`);
+      }
+    } catch (err) {
+      console.error('Failed to refresh:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -207,6 +234,15 @@ const SlideshowPage = () => {
         className="w-full h-full object-cover animate-fade-in"
       />
       <div className="absolute bottom-4 right-4 flex items-center gap-2">
+        <Button
+          onClick={handleRefresh}
+          size="icon"
+          variant="secondary"
+          disabled={refreshing}
+          className="bg-black/50 hover:bg-black/70 text-white border-none"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+        </Button>
         <Button
           onClick={toggleFullscreen}
           size="icon"
