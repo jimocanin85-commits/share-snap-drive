@@ -231,27 +231,27 @@ const SlideshowPage = () => {
         key={currentIndex}
         src={images[currentIndex]}
         alt={`Slide ${currentIndex + 1}`}
-        className="w-full h-full object-cover animate-fade-in"
+        className="w-full h-full object-contain md:object-cover animate-fade-in"
       />
-      <div className="absolute bottom-4 right-4 flex items-center gap-2">
+      <div className="absolute bottom-safe inset-x-0 pb-4 px-4 flex items-center justify-center gap-2 md:bottom-4 md:right-4 md:left-auto md:justify-end">
         <Button
           onClick={handleRefresh}
           size="icon"
           variant="secondary"
           disabled={refreshing}
-          className="bg-black/50 hover:bg-black/70 text-white border-none"
+          className="bg-black/70 hover:bg-black/90 text-white border-none h-12 w-12 md:h-10 md:w-10 touch-manipulation"
         >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-5 w-5 md:h-4 md:w-4 ${refreshing ? 'animate-spin' : ''}`} />
         </Button>
         <Button
           onClick={toggleFullscreen}
           size="icon"
           variant="secondary"
-          className="bg-black/50 hover:bg-black/70 text-white border-none"
+          className="bg-black/70 hover:bg-black/90 text-white border-none h-12 w-12 md:h-10 md:w-10 touch-manipulation"
         >
-          <Maximize className="h-4 w-4" />
+          <Maximize className="h-5 w-5 md:h-4 md:w-4" />
         </Button>
-        <div className="bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+        <div className="bg-black/70 text-white px-4 py-2 md:px-3 md:py-1 rounded-full text-base md:text-sm font-medium">
           {currentIndex + 1} / {images.length}
         </div>
       </div>
