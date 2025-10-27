@@ -82,6 +82,19 @@ const GalleryPage = () => {
 
   const downloadImage = async (url: string, index: number) => {
     try {
+      // Detect in-app browsers (Facebook, Instagram, etc.)
+      const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+      
+      // If in Facebook/Instagram in-app browser, show message to open in external browser
+      if (isInAppBrowser) {
+        toast({
+          title: "Åben i ekstern browser",
+          description: "Tryk på '...' eller 'Åben i ekstern browser' for at downloade billeder",
+          duration: 5000,
+        });
+        return;
+      }
+      
       // Fetch the image
       const response = await fetch(url);
       const blob = await response.blob();
@@ -91,11 +104,8 @@ const GalleryPage = () => {
       const isAndroid = /Android/.test(navigator.userAgent);
       const isMobileDevice = isIOS || isAndroid;
       
-      // Detect in-app browsers (Facebook, Instagram, etc.)
-      const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
-      
-      // On mobile devices (but not in-app browsers), try Web Share API
-      if (isMobileDevice && !isInAppBrowser && navigator.share) {
+      // On mobile devices, try Web Share API
+      if (isMobileDevice && navigator.share) {
         try {
           const file = new File([blob], `billede-${index + 1}.jpg`, { 
             type: 'image/jpeg',
