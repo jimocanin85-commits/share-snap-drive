@@ -19,6 +19,9 @@ const GalleryPage = () => {
 
   // Detect if user is in Facebook/Instagram in-app browser
   const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+  
+  // Detect mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   const fetchImages = async () => {
     try {
@@ -208,8 +211,8 @@ const GalleryPage = () => {
           {images.map((image, index) => (
             <div 
               key={image.publicId} 
-              className="group relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer"
-              onClick={() => setSelectedImage({ url: image.url, index })}
+              className={`group relative aspect-square rounded-lg overflow-hidden bg-muted ${!isMobile ? 'cursor-pointer' : ''}`}
+              onClick={() => !isMobile && setSelectedImage({ url: image.url, index })}
             >
               <img
                 src={image.thumbnail}
@@ -217,19 +220,37 @@ const GalleryPage = () => {
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Maximize2 className="h-12 w-12 text-white" />
-              </div>
-              <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
-                {index + 1} / {images.length}
-              </div>
+              {!isMobile && (
+                <>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Maximize2 className="h-12 w-12 text-white" />
+                  </div>
+                  <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                    {index + 1} / {images.length}
+                  </div>
+                </>
+              )}
+              {isMobile && (
+                <div className="absolute bottom-2 right-2">
+                  <Button
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      downloadImage(image.url, index);
+                    }}
+                    className="bg-primary hover:bg-primary/90 shadow-lg"
+                  >
+                    <Download className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Fullscreen Image Modal */}
-      {selectedImage && (
+      {/* Fullscreen Image Modal - Only on Desktop */}
+      {!isMobile && selectedImage && (
         <div 
           className="fixed inset-0 z-50 bg-black flex items-center justify-center"
           onClick={() => setSelectedImage(null)}
