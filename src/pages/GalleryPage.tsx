@@ -99,40 +99,7 @@ const GalleryPage = () => {
       const response = await fetch(url);
       const blob = await response.blob();
       
-      // Detect iOS and Android devices (mobile only)
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isAndroid = /Android/.test(navigator.userAgent);
-      const isMobileDevice = isIOS || isAndroid;
-      
-      // On mobile devices, try Web Share API
-      if (isMobileDevice && navigator.share) {
-        try {
-          const file = new File([blob], `billede-${index + 1}.jpg`, { 
-            type: 'image/jpeg',
-            lastModified: Date.now()
-          });
-          
-          // Check if we can share files
-          const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
-          
-          if (canShareFiles) {
-            await navigator.share({
-              files: [file],
-              title: `Billede ${index + 1}`,
-            });
-            // Don't show toast - user already sees the native share menu
-            return;
-          }
-        } catch (shareError: any) {
-          // User cancelled share - don't show error
-          if (shareError.name === 'AbortError') {
-            return;
-          }
-          console.log("Share API failed:", shareError);
-        }
-      }
-      
-      // Desktop fallback: Direct download (triggers Save As dialog)
+      // Direct download approach
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
