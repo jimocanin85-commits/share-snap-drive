@@ -179,20 +179,6 @@ const GalleryPage = () => {
                   </div>
                 </>
               )}
-              {isMobile && (
-                <div className="absolute bottom-2 right-2">
-                  <Button
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      downloadImage(image.url, index);
-                    }}
-                    className="bg-primary hover:bg-primary/90 shadow-lg"
-                  >
-                    <Download className="h-5 w-5" />
-                  </Button>
-                </div>
-              )}
             </div>
           ))}
         </div>
