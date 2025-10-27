@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Presentation } from "lucide-react";
+import { Download, Presentation, ExternalLink } from "lucide-react";
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -74,14 +74,22 @@ const AdminPage = () => {
             </Button>
           </div>
 
-          <Button 
-            onClick={() => navigate("/slideshow")} 
-            variant="secondary"
-            className="w-full max-w-md"
-          >
-            <Presentation className="mr-2 h-4 w-4" />
-            Se slideshow
-          </Button>
+          <div className="flex flex-col gap-3 w-full max-w-md">
+            <Button 
+              onClick={() => navigate("/slideshow")} 
+              variant="secondary"
+            >
+              <Presentation className="mr-2 h-4 w-4" />
+              Se slideshow
+            </Button>
+            <Button 
+              onClick={() => navigate("/gallery")} 
+              variant="secondary"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Åbn i browser
+            </Button>
+          </div>
         </div>
 
         <div className="text-center text-sm text-muted-foreground space-y-1">
