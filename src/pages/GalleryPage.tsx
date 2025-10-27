@@ -16,9 +16,6 @@ const GalleryPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ url: string; index: number } | null>(null);
   const { toast } = useToast();
-
-  // Detect if user is in Facebook/Instagram in-app browser
-  const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
   
   // Detect mobile device
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -85,18 +82,6 @@ const GalleryPage = () => {
 
   const downloadImage = async (url: string, index: number) => {
     try {
-      // Special handling for Facebook/Instagram in-app browser
-      // These browsers block downloads, so we open the image directly for long-press save
-      if (isInAppBrowser) {
-        window.open(url, '_blank');
-        toast({
-          title: "Billede åbnet",
-          description: "Hold fingeren på billedet og vælg 'Gem billede'",
-          duration: 5000,
-        });
-        return;
-      }
-
       // Fetch the image
       const response = await fetch(url);
       const blob = await response.blob();
@@ -104,10 +89,10 @@ const GalleryPage = () => {
       // Detect iOS and Android devices (mobile only)
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isAndroid = /Android/.test(navigator.userAgent);
-      const isMobile = isIOS || isAndroid;
+      const isMobileDevice = isIOS || isAndroid;
       
-      // Only use Web Share API on mobile devices
-      if (isMobile && navigator.share) {
+      // On mobile devices, always use Web Share API
+      if (isMobileDevice && navigator.share) {
         try {
           const file = new File([blob], `billede-${index + 1}.jpg`, { 
             type: 'image/jpeg',
@@ -121,36 +106,25 @@ const GalleryPage = () => {
             await navigator.share({
               files: [file],
               title: `Billede ${index + 1}`,
-              text: 'Billede fra festen'
             });
             
             toast({
-              title: "Success",
-              description: "Billede downloadet",
+              title: "Gem billede",
+              description: "Vælg 'Gem billede' eller 'Tilføj til fotos'",
+              duration: 2000,
             });
             return;
           }
-        } catch (shareError) {
-          console.log("Share API failed, using fallback:", shareError);
+        } catch (shareError: any) {
+          // User cancelled share - don't show error
+          if (shareError.name === 'AbortError') {
+            return;
+          }
+          console.log("Share API failed:", shareError);
         }
       }
       
-      // iOS fallback: Open in new tab for long-press save
-      if (isIOS) {
-        const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, '_blank');
-        
-        toast({
-          title: "Billede åbnet",
-          description: "Hold fingeren på billedet og vælg 'Tilføj til Fotos' eller 'Gem billede'",
-        });
-        
-        // Clean up after a delay
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-        return;
-      }
-      
-      // Desktop and Android fallback: Direct download (triggers Save As dialog)
+      // Desktop fallback: Direct download (triggers Save As dialog)
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
