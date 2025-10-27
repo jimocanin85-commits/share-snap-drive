@@ -102,11 +102,13 @@ const GalleryPage = () => {
       const response = await fetch(url);
       const blob = await response.blob();
       
-      // Detect iOS devices
+      // Detect iOS and Android devices (mobile only)
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+      const isMobile = isIOS || isAndroid;
       
-      // Try Web Share API first (works on both iOS and Android in regular browsers)
-      if (navigator.share) {
+      // Only use Web Share API on mobile devices
+      if (isMobile && navigator.share) {
         try {
           const file = new File([blob], `billede-${index + 1}.jpg`, { 
             type: 'image/jpeg',
@@ -151,15 +153,20 @@ const GalleryPage = () => {
         return;
       }
       
-      // Android/Desktop fallback: Regular download
+      // Desktop and Android fallback: Direct download (triggers Save As dialog)
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = `billede-${index + 1}.jpg`;
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
       
       toast({
         title: "Success",
