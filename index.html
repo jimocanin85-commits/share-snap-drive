@@ -6,6 +6,12 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    
+    <!-- Force external browser opening from social media apps -->
+    <meta property="al:web:should_fallback" content="false" />
+    <meta property="al:ios:url" content="https://fdcf94fc-7f5a-46ee-92aa-3fc815740845.lovableproject.com" />
+    <meta property="al:android:url" content="https://fdcf94fc-7f5a-46ee-92aa-3fc815740845.lovableproject.com" />
+    
     <title>Sari&Jas 40 års - Del dine billeder</title>
     <meta name="description" content="Upload og del dine billeder fra Sari & Jas's 40 års fest" />
     <meta name="author" content="Lovable" />
@@ -23,5 +29,39 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Force external browser for Facebook/Instagram in-app browsers -->
+    <script>
+      (function() {
+        const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+        const hasRedirected = sessionStorage.getItem('hasRedirected');
+        
+        if (isInAppBrowser && !hasRedirected) {
+          sessionStorage.setItem('hasRedirected', 'true');
+          
+          const currentUrl = window.location.href;
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          const isAndroid = /Android/.test(navigator.userAgent);
+          
+          if (isIOS) {
+            // For iOS: Try to open in Safari
+            window.location.href = 'x-safari-' + currentUrl;
+            
+            // Fallback: Show instructions after a delay
+            setTimeout(() => {
+              alert('Åbn denne side i Safari for bedste oplevelse.\n\nTryk på menuen (•••) og vælg "Åbn i Safari"');
+            }, 1000);
+          } else if (isAndroid) {
+            // For Android: Try to open in Chrome
+            window.location.href = 'intent://' + currentUrl.replace(/https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            
+            // Fallback: Show instructions after a delay
+            setTimeout(() => {
+              alert('Åbn denne side i Chrome for bedste oplevelse.\n\nTryk på menuen (⋮) og vælg "Åbn i Chrome"');
+            }, 1000);
+          }
+        }
+      })();
+    </script>
   </body>
 </html>
