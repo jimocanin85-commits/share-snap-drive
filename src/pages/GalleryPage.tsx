@@ -4,8 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Download, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface CloudinaryImage {
+  url: string;
+  publicId: string;
+}
+
 const GalleryPage = () => {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<CloudinaryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
@@ -99,15 +104,15 @@ const GalleryPage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {images.map((image, index) => (
-            <div key={index} className="group relative aspect-square rounded-lg overflow-hidden bg-muted">
+            <div key={image.publicId} className="group relative aspect-square rounded-lg overflow-hidden bg-muted">
               <img
-                src={image}
+                src={image.url}
                 alt={`Billede ${index + 1}`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Button
-                  onClick={() => downloadImage(image, index)}
+                  onClick={() => downloadImage(image.url, index)}
                   size="lg"
                   className="gap-2"
                 >
