@@ -79,35 +79,53 @@ const GalleryPage = () => {
 
   const downloadImage = async (url: string, index: number) => {
     try {
-      // Detect iOS devices
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      // Fetch the image
+      const response = await fetch(url);
+      const blob = await response.blob();
       
+      // Check if Web Share API is available (works on mobile)
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], `billede-${index + 1}.jpg`, { type: 'image/jpeg' });
+        
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `Billede ${index + 1}`,
+          });
+          
+          toast({
+            title: "Billede delt",
+            description: "Vælg 'Gem til billeder' for at gemme i dit galleri",
+          });
+          return;
+        }
+      }
+      
+      // Fallback for iOS: Open in new tab
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
-        // For iOS: Open image in new window so user can long-press to save
         window.open(url, '_blank');
         toast({
           title: "Billede åbnet",
-          description: "Hold fingeren på billedet og vælg 'Gem billede' for at gemme det i dit bibliotek",
+          description: "Hold fingeren på billedet og vælg 'Gem billede'",
         });
-      } else {
-        // For Android and desktop: Direct download
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = `billede-${index + 1}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(blobUrl);
-        
-        toast({
-          title: "Success",
-          description: "Billede downloadet",
-        });
+        return;
       }
+      
+      // Fallback for desktop: Regular download
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `billede-${index + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      
+      toast({
+        title: "Success",
+        description: "Billede downloadet",
+      });
     } catch (error) {
       console.error("Error downloading image:", error);
       toast({
