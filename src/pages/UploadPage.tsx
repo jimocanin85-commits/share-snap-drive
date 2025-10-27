@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle2, AlertCircle, X, Play } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, X, Play, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import jasSariPhoto from "@/assets/jas-sari-photo.jpg";
@@ -204,16 +204,27 @@ const UploadPage = () => {
             </p>
           </div>
 
-          {/* View Slideshow Button */}
-          <Button
-            onClick={() => navigate('/slideshow')}
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Se Slideshow
-          </Button>
+          {/* View Slideshow and Gallery Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center">
+            <Button
+              onClick={() => navigate('/slideshow')}
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Se Slideshow
+            </Button>
+            <Button
+              onClick={() => navigate('/gallery')}
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Åbn i browser
+            </Button>
+          </div>
 
           {/* File input */}
           <div className="space-y-4 sm:space-y-6">
