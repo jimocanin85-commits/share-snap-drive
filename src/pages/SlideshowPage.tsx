@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Maximize, RefreshCw } from "lucide-react";
+import { Loader2, Maximize, RefreshCw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const SlideshowPage = () => {
+  const navigate = useNavigate();
   const [images, setImages] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -250,6 +252,14 @@ const SlideshowPage = () => {
           className="bg-black/70 hover:bg-black/90 text-white border-none h-12 w-12 md:h-10 md:w-10 touch-manipulation"
         >
           <Maximize className="h-5 w-5 md:h-4 md:w-4" />
+        </Button>
+        <Button
+          onClick={() => navigate("/gallery")}
+          size="icon"
+          variant="secondary"
+          className="bg-black/70 hover:bg-black/90 text-white border-none h-12 w-12 md:h-10 md:w-10 touch-manipulation"
+        >
+          <ExternalLink className="h-5 w-5 md:h-4 md:w-4" />
         </Button>
         <div className="bg-black/70 text-white px-4 py-2 md:px-3 md:py-1 rounded-full text-base md:text-sm font-medium">
           {currentIndex + 1} / {images.length}
