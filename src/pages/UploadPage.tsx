@@ -213,7 +213,7 @@ const UploadPage = () => {
               className="w-full sm:w-auto"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              Åbn for at se billeder fra festen
+              Tryk for at se billeder fra festen
             </Button>
           </div>
 
