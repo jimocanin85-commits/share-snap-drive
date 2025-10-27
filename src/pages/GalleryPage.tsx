@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, X, Maximize2 } from "lucide-react";
+import { Download, RefreshCw, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CloudinaryImage {
@@ -42,6 +42,35 @@ const GalleryPage = () => {
   useEffect(() => {
     fetchImages();
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return;
+      
+      if (e.key === "ArrowLeft") {
+        navigatePrevious();
+      } else if (e.key === "ArrowRight") {
+        navigateNext();
+      } else if (e.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage, images]);
+
+  const navigateNext = () => {
+    if (!selectedImage) return;
+    const nextIndex = (selectedImage.index + 1) % images.length;
+    setSelectedImage({ url: images[nextIndex].url, index: nextIndex });
+  };
+
+  const navigatePrevious = () => {
+    if (!selectedImage) return;
+    const prevIndex = selectedImage.index === 0 ? images.length - 1 : selectedImage.index - 1;
+    setSelectedImage({ url: images[prevIndex].url, index: prevIndex });
+  };
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -145,6 +174,33 @@ const GalleryPage = () => {
           >
             <X className="h-6 w-6" />
           </Button>
+          
+          {/* Previous Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white h-12 w-12"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigatePrevious();
+            }}
+          >
+            <ChevronLeft className="h-8 w-8" />
+          </Button>
+
+          {/* Next Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-black/50 hover:bg-black/70 text-white h-12 w-12"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateNext();
+            }}
+          >
+            <ChevronRight className="h-8 w-8" />
+          </Button>
+
           <Button
             variant="default"
             size="lg"
