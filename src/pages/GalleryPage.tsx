@@ -15,7 +15,11 @@ const GalleryPage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ url: string; index: number } | null>(null);
+  const [showBrowserWarning, setShowBrowserWarning] = useState(false);
   const { toast } = useToast();
+
+  // Detect if user is in Facebook/Instagram in-app browser
+  const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
 
   const fetchImages = async () => {
     try {
@@ -41,6 +45,10 @@ const GalleryPage = () => {
 
   useEffect(() => {
     fetchImages();
+    // Show warning if in Facebook/Instagram browser
+    if (isInAppBrowser) {
+      setShowBrowserWarning(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -78,6 +86,17 @@ const GalleryPage = () => {
   };
 
   const downloadImage = async (url: string, index: number) => {
+    // Check if in Facebook/Instagram browser
+    if (isInAppBrowser) {
+      toast({
+        title: "Åbn i browser",
+        description: "Download virker ikke i Facebook/Instagram. Tryk på '...' øverst og vælg 'Åbn i browser'",
+        variant: "destructive",
+        duration: 8000,
+      });
+      return;
+    }
+
     try {
       // Fetch the image
       const response = await fetch(url);
@@ -86,7 +105,7 @@ const GalleryPage = () => {
       // Detect iOS devices
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       
-      // Try Web Share API first (works on both iOS and Android)
+      // Try Web Share API first (works on both iOS and Android in regular browsers)
       if (navigator.share) {
         try {
           const file = new File([blob], `billede-${index + 1}.jpg`, { 
@@ -184,6 +203,33 @@ const GalleryPage = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
+        {/* Browser Warning Banner */}
+        {showBrowserWarning && (
+          <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-950/20 border-2 border-yellow-500 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="flex-1">
+                <p className="font-semibold text-yellow-900 dark:text-yellow-200 mb-1">
+                  ⚠️ Download virker ikke i Facebook/Instagram
+                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-300 mb-2">
+                  For at downloade billeder skal du åbne siden i din normale browser (Safari, Chrome, etc.)
+                </p>
+                <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                  Tryk på '...' menuen øverst og vælg "Åbn i browser" eller "Åbn i Safari/Chrome"
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBrowserWarning(false)}
+                className="text-yellow-900 dark:text-yellow-200"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {images.map((image, index) => (
             <div 
