@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Download, RefreshCw, X, Maximize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CloudinaryImage {
+  thumbnail: string;
   url: string;
   publicId: string;
 }
@@ -13,6 +15,7 @@ const GalleryPage = () => {
   const [images, setImages] = useState<CloudinaryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ url: string; index: number } | null>(null);
   const { toast } = useToast();
 
   const fetchImages = async () => {
@@ -104,21 +107,19 @@ const GalleryPage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {images.map((image, index) => (
-            <div key={image.publicId} className="group relative aspect-square rounded-lg overflow-hidden bg-muted">
+            <div 
+              key={image.publicId} 
+              className="group relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer"
+              onClick={() => setSelectedImage({ url: image.url, index })}
+            >
               <img
-                src={image.url}
+                src={image.thumbnail}
                 alt={`Billede ${index + 1}`}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Button
-                  onClick={() => downloadImage(image.url, index)}
-                  size="lg"
-                  className="gap-2"
-                >
-                  <Download className="h-5 w-5" />
-                  Download
-                </Button>
+                <Maximize2 className="h-12 w-12 text-white" />
               </div>
               <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
                 {index + 1} / {images.length}
@@ -127,6 +128,41 @@ const GalleryPage = () => {
           ))}
         </div>
       </div>
+
+      {/* Fullscreen Image Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0">
+          {selectedImage && (
+            <div className="relative w-full h-full bg-black">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 z-50 bg-black/50 hover:bg-black/70 text-white"
+                onClick={() => setSelectedImage(null)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              <Button
+                variant="default"
+                size="lg"
+                className="absolute bottom-4 right-4 z-50 gap-2"
+                onClick={() => downloadImage(selectedImage.url, selectedImage.index)}
+              >
+                <Download className="h-5 w-5" />
+                Download
+              </Button>
+              <div className="absolute top-2 left-2 z-50 bg-black/70 text-white px-3 py-2 rounded text-sm">
+                {selectedImage.index + 1} / {images.length}
+              </div>
+              <img
+                src={selectedImage.url}
+                alt={`Billede ${selectedImage.index + 1}`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
