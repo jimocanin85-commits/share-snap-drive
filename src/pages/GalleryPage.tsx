@@ -126,10 +126,8 @@ const GalleryPage = () => {
             });
             
             toast({
-              title: isIOS ? "Billede delt" : "Gem billede",
-              description: isIOS 
-                ? "Vælg 'Gem billede' for at gemme i dit fotoalbum" 
-                : "Vælg 'Gem i Downloads' eller 'Billeder'",
+              title: "Success",
+              description: "Billede downloadet",
             });
             return;
           }
