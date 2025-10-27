@@ -79,27 +79,40 @@ const GalleryPage = () => {
 
   const downloadImage = async (url: string, index: number) => {
     try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      // Detect iOS devices
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = `image-${index + 1}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
-      
-      toast({
-        title: "Success",
-        description: "Image downloaded successfully",
-      });
+      if (isIOS) {
+        // For iOS: Open image in new window so user can long-press to save
+        window.open(url, '_blank');
+        toast({
+          title: "Billede åbnet",
+          description: "Hold fingeren på billedet og vælg 'Gem billede' for at gemme det i dit bibliotek",
+        });
+      } else {
+        // For Android and desktop: Direct download
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = `billede-${index + 1}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+        
+        toast({
+          title: "Success",
+          description: "Billede downloadet",
+        });
+      }
     } catch (error) {
       console.error("Error downloading image:", error);
       toast({
-        title: "Error",
-        description: "Failed to download image",
+        title: "Fejl",
+        description: "Kunne ikke downloade billede",
         variant: "destructive",
       });
     }
