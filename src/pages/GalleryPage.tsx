@@ -107,12 +107,7 @@ const GalleryPage = () => {
               files: [file],
               title: `Billede ${index + 1}`,
             });
-            
-            toast({
-              title: "Gem billede",
-              description: "Vælg 'Gem billede' eller 'Tilføj til fotos'",
-              duration: 2000,
-            });
+            // Don't show toast - user already sees the native share menu
             return;
           }
         } catch (shareError: any) {
