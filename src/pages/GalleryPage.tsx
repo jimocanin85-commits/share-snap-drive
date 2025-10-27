@@ -91,8 +91,11 @@ const GalleryPage = () => {
       const isAndroid = /Android/.test(navigator.userAgent);
       const isMobileDevice = isIOS || isAndroid;
       
-      // On mobile devices, always use Web Share API
-      if (isMobileDevice && navigator.share) {
+      // Detect in-app browsers (Facebook, Instagram, etc.)
+      const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+      
+      // On mobile devices (but not in-app browsers), try Web Share API
+      if (isMobileDevice && !isInAppBrowser && navigator.share) {
         try {
           const file = new File([blob], `billede-${index + 1}.jpg`, { 
             type: 'image/jpeg',
