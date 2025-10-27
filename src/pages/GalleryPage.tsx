@@ -17,6 +17,9 @@ const GalleryPage = () => {
   const [selectedImage, setSelectedImage] = useState<{ url: string; index: number } | null>(null);
   const { toast } = useToast();
 
+  // Detect if user is in Facebook/Instagram in-app browser
+  const isInAppBrowser = /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+
   const fetchImages = async () => {
     try {
       const { data, error } = await supabase.functions.invoke("get-images");
@@ -79,6 +82,18 @@ const GalleryPage = () => {
 
   const downloadImage = async (url: string, index: number) => {
     try {
+      // Special handling for Facebook/Instagram in-app browser
+      // These browsers block downloads, so we open the image directly for long-press save
+      if (isInAppBrowser) {
+        window.open(url, '_blank');
+        toast({
+          title: "Billede åbnet",
+          description: "Hold fingeren på billedet og vælg 'Gem billede'",
+          duration: 5000,
+        });
+        return;
+      }
+
       // Fetch the image
       const response = await fetch(url);
       const blob = await response.blob();
