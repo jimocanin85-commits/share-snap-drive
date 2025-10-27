@@ -225,11 +225,8 @@ const UploadPage = () => {
             >
               <div className="border-2 border-dashed border-border group-hover:border-primary rounded-xl p-10 sm:p-12 transition-all duration-300 bg-secondary/20 group-hover:bg-secondary/40 group-active:scale-[0.97] min-h-[180px] sm:min-h-[200px] flex flex-col items-center justify-center">
                 <Upload className="w-14 h-14 sm:w-16 sm:h-16 text-muted-foreground group-hover:text-primary mx-auto mb-3 sm:mb-4 transition-colors" />
-                <p className="text-base sm:text-lg text-foreground font-semibold mb-1 sm:mb-2">
+                <p className="text-base sm:text-lg text-foreground font-semibold">
                   Tryk her for at vælge billeder
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                  Alle billedformater understøttes (JPG, PNG, HEIC, etc.)
                 </p>
               </div>
               <input
