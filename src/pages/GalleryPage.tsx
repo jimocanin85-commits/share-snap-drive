@@ -131,13 +131,13 @@ const GalleryPage = () => {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-0">
+        <DialogContent className="max-w-screen max-h-screen w-screen h-screen p-0 border-0 bg-black">
           {selectedImage && (
-            <div className="relative w-full h-full bg-black">
+            <div className="relative w-full h-full flex items-center justify-center">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 z-50 bg-black/50 hover:bg-black/70 text-white"
+                className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white"
                 onClick={() => setSelectedImage(null)}
               >
                 <X className="h-6 w-6" />
@@ -151,13 +151,13 @@ const GalleryPage = () => {
                 <Download className="h-5 w-5" />
                 Download
               </Button>
-              <div className="absolute top-2 left-2 z-50 bg-black/70 text-white px-3 py-2 rounded text-sm">
+              <div className="absolute top-4 left-4 z-50 bg-black/70 text-white px-3 py-2 rounded text-sm">
                 {selectedImage.index + 1} / {images.length}
               </div>
               <img
                 src={selectedImage.url}
                 alt={`Billede ${selectedImage.index + 1}`}
-                className="w-full h-full object-contain"
+                className="max-w-full max-h-full object-contain"
               />
             </div>
           )}
