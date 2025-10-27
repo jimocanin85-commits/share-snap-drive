@@ -83,36 +83,56 @@ const GalleryPage = () => {
       const response = await fetch(url);
       const blob = await response.blob();
       
-      // Check if Web Share API is available (works on mobile)
-      if (navigator.share && navigator.canShare) {
-        const file = new File([blob], `billede-${index + 1}.jpg`, { type: 'image/jpeg' });
-        
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `Billede ${index + 1}`,
+      // Detect iOS devices
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      
+      // Try Web Share API first (works on both iOS and Android)
+      if (navigator.share) {
+        try {
+          const file = new File([blob], `billede-${index + 1}.jpg`, { 
+            type: 'image/jpeg',
+            lastModified: Date.now()
           });
           
-          toast({
-            title: "Billede delt",
-            description: "Vælg 'Gem til billeder' for at gemme i dit galleri",
-          });
-          return;
+          // Check if we can share files
+          const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
+          
+          if (canShareFiles) {
+            await navigator.share({
+              files: [file],
+              title: `Billede ${index + 1}`,
+              text: 'Billede fra festen'
+            });
+            
+            toast({
+              title: isIOS ? "Billede delt" : "Gem billede",
+              description: isIOS 
+                ? "Vælg 'Gem billede' for at gemme i dit fotoalbum" 
+                : "Vælg 'Gem i Downloads' eller 'Billeder'",
+            });
+            return;
+          }
+        } catch (shareError) {
+          console.log("Share API failed, using fallback:", shareError);
         }
       }
       
-      // Fallback for iOS: Open in new tab
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      // iOS fallback: Open in new tab for long-press save
       if (isIOS) {
-        window.open(url, '_blank');
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        
         toast({
           title: "Billede åbnet",
-          description: "Hold fingeren på billedet og vælg 'Gem billede'",
+          description: "Hold fingeren på billedet og vælg 'Tilføj til Fotos' eller 'Gem billede'",
         });
+        
+        // Clean up after a delay
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
         return;
       }
       
-      // Fallback for desktop: Regular download
+      // Android/Desktop fallback: Regular download
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
