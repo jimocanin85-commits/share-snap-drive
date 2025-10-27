@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Download, RefreshCw, X, Maximize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -129,46 +128,46 @@ const GalleryPage = () => {
         </div>
       </div>
 
-      {/* Fullscreen Image Dialog */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] p-0 m-0 border-0 bg-black [&>button]:hidden">
-          {selectedImage && (
-            <div className="relative w-full h-full flex items-center justify-center p-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedImage(null);
-                }}
-              >
-                <X className="h-6 w-6" />
-              </Button>
-              <Button
-                variant="default"
-                size="lg"
-                className="absolute bottom-4 right-4 z-50 gap-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  downloadImage(selectedImage.url, selectedImage.index);
-                }}
-              >
-                <Download className="h-5 w-5" />
-                Download
-              </Button>
-              <div className="absolute top-4 left-4 z-50 bg-black/70 text-white px-3 py-2 rounded text-sm">
-                {selectedImage.index + 1} / {images.length}
-              </div>
-              <img
-                src={selectedImage.url}
-                alt={`Billede ${selectedImage.index + 1}`}
-                className="max-w-full max-h-full w-auto h-auto object-contain"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Fullscreen Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+          onClick={() => setSelectedImage(null)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedImage(null);
+            }}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+          <Button
+            variant="default"
+            size="lg"
+            className="absolute bottom-4 right-4 z-50 gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadImage(selectedImage.url, selectedImage.index);
+            }}
+          >
+            <Download className="h-5 w-5" />
+            Download
+          </Button>
+          <div className="absolute top-4 left-4 z-50 bg-black/70 text-white px-3 py-2 rounded text-sm">
+            {selectedImage.index + 1} / {images.length}
+          </div>
+          <img
+            src={selectedImage.url}
+            alt={`Billede ${selectedImage.index + 1}`}
+            className="max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] w-auto h-auto object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };
