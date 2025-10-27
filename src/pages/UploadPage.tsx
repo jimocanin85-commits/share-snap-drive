@@ -222,7 +222,7 @@ const UploadPage = () => {
               className="w-full sm:w-auto"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              Åbn i browser
+              Se billeder i Web browser
             </Button>
           </div>
 

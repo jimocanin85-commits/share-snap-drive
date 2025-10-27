@@ -87,7 +87,7 @@ const AdminPage = () => {
               variant="secondary"
             >
               <ExternalLink className="mr-2 h-4 w-4" />
-              Åbn i browser
+              Se billeder i Web browser
             </Button>
           </div>
         </div>
