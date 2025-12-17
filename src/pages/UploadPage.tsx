@@ -180,8 +180,8 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex justify-center items-start py-4 sm:py-8 px-3 sm:px-4">
-      <Card className="w-full max-w-md sm:max-w-xl p-4 sm:p-6 lg:p-8 shadow-[var(--shadow-card)] border-border/50 animate-fade-in rounded-2xl sm:rounded-3xl">
+    <div className="min-h-[100dvh] lg:min-h-screen bg-gradient-to-b from-background to-secondary/30 flex justify-center items-center px-3 sm:px-4 py-4 sm:py-8">
+      <Card className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl p-4 sm:p-6 lg:p-8 shadow-[var(--shadow-card)] border-border/50 animate-fade-in rounded-2xl sm:rounded-3xl">
         <div className="text-center space-y-4 sm:space-y-6">
           {/* Logo */}
           <div className="flex justify-center">
@@ -208,7 +208,7 @@ const UploadPage = () => {
               <div className="border-2 border-dashed border-border group-hover:border-primary rounded-xl p-6 sm:p-8 transition-all duration-300 bg-secondary/20 group-hover:bg-secondary/40 group-active:scale-[0.97] min-h-[160px] sm:min-h-[180px] flex flex-col items-center justify-center">
                 <Camera className="w-12 h-12 sm:w-14 sm:h-14 text-muted-foreground group-hover:text-primary mx-auto mb-3 sm:mb-4 transition-colors" />
                 <p className="text-sm sm:text-base text-foreground font-semibold text-center">
-                  Vælg billeder fra din telefon, og tryk på <span className="text-primary">Upload</span>
+                  Vælg billeder fra din telefon
                 </p>
               </div>
               <input
