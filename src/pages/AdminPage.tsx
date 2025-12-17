@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Images } from "lucide-react";
 
 const PUBLIC_UPLOAD_URL = import.meta.env.VITE_PUBLIC_UPLOAD_URL as string | undefined;
 
 const AdminPage = () => {
+  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [uploadUrl, setUploadUrl] = useState("");
 
@@ -71,6 +73,14 @@ const AdminPage = () => {
             <Button onClick={downloadQRCode} className="flex-1">
               <Download className="mr-2 h-4 w-4" />
               Download QR-kode
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => navigate("/gallery")}
+            >
+              <Images className="mr-2 h-4 w-4" />
+              Billeder fra Frivilligfesten
             </Button>
           </div>
         </div>
