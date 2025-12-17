@@ -183,15 +183,13 @@ const UploadPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center p-3 sm:p-6">
       <Card className="w-full max-w-2xl p-5 sm:p-8 lg:p-10 shadow-[var(--shadow-card)] border-border/50 animate-fade-in">
         <div className="text-center space-y-5 sm:space-y-8">
-          {/* Photo */}
+          {/* Logo */}
           <div className="flex justify-center">
-            <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-full overflow-hidden shadow-[var(--shadow-button)] ring-4 ring-primary/20">
-              <img 
-                src={mbLogo} 
-                alt="MB logo" 
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <img 
+              src={mbLogo} 
+              alt="MB logo" 
+              className="h-20 sm:h-24 md:h-32 w-auto object-contain drop-shadow-md"
+            />
           </div>
 
           {/* Title */}
@@ -200,21 +198,8 @@ const UploadPage = () => {
               Frivilligfesten 2026
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground px-4">
-              Vælg billeder fra din telefon og tryk Upload
+              Vælg billder fra din telefon.
             </p>
-          </div>
-
-          {/* View Gallery Button */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center">
-            <Button
-              onClick={() => navigate('/gallery')}
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Tryk for at se billeder fra festen
-            </Button>
           </div>
 
           {/* File input */}

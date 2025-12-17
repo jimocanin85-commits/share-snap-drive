@@ -74,15 +74,7 @@ const AdminPage = () => {
             </Button>
           </div>
 
-          <div className="flex flex-col gap-3 w-full max-w-md">
-            <Button 
-              onClick={() => navigate("/gallery")} 
-              variant="secondary"
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Tryk for at se billeder fra festen
-            </Button>
-          </div>
+
         </div>
 
         <div className="text-center text-sm text-muted-foreground space-y-1">
