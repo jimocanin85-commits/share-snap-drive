@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, CheckCircle2, AlertCircle, X, ExternalLink } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, X, ExternalLink, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import mbLogo from "@/assets/mb-logo.png";
@@ -180,9 +180,9 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center p-3 sm:p-6">
-      <Card className="w-full max-w-2xl p-5 sm:p-8 lg:p-10 shadow-[var(--shadow-card)] border-border/50 animate-fade-in">
-        <div className="text-center space-y-5 sm:space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex justify-center items-start py-4 sm:py-8 px-3 sm:px-4">
+      <Card className="w-full max-w-md sm:max-w-xl p-4 sm:p-6 lg:p-8 shadow-[var(--shadow-card)] border-border/50 animate-fade-in rounded-2xl sm:rounded-3xl">
+        <div className="text-center space-y-4 sm:space-y-6">
           {/* Logo */}
           <div className="flex justify-center">
             <img 
@@ -197,21 +197,18 @@ const UploadPage = () => {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
               Frivilligfesten 2026
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground px-4">
-              Vælg billeder fra din telefon
-            </p>
           </div>
 
           {/* File input */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 text-left">
             <label 
               htmlFor="file-upload" 
               className="block cursor-pointer group touch-manipulation"
             >
-              <div className="border-2 border-dashed border-border group-hover:border-primary rounded-xl p-10 sm:p-12 transition-all duration-300 bg-secondary/20 group-hover:bg-secondary/40 group-active:scale-[0.97] min-h-[180px] sm:min-h-[200px] flex flex-col items-center justify-center">
-                <Upload className="w-14 h-14 sm:w-16 sm:h-16 text-muted-foreground group-hover:text-primary mx-auto mb-3 sm:mb-4 transition-colors" />
-                <p className="text-base sm:text-lg text-foreground font-semibold">
-                  Tryk her for at vælge billeder
+              <div className="border-2 border-dashed border-border group-hover:border-primary rounded-xl p-6 sm:p-8 transition-all duration-300 bg-secondary/20 group-hover:bg-secondary/40 group-active:scale-[0.97] min-h-[160px] sm:min-h-[180px] flex flex-col items-center justify-center">
+                <Camera className="w-12 h-12 sm:w-14 sm:h-14 text-muted-foreground group-hover:text-primary mx-auto mb-3 sm:mb-4 transition-colors" />
+                <p className="text-sm sm:text-base text-foreground font-semibold text-center">
+                  Vælg billeder fra din telefon, og tryk på <span className="text-primary">Upload</span>
                 </p>
               </div>
               <input

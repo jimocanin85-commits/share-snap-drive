@@ -46,40 +46,38 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Upload Page QR Code</h1>
-          <p className="text-muted-foreground">
-            Scan this code to access the image upload page
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex justify-center items-start py-4 sm:py-8 px-3 sm:px-4">
+      <Card className="w-full max-w-md sm:max-w-xl p-4 sm:p-6 lg:p-8 shadow-[var(--shadow-card)] border-border/50 rounded-2xl sm:rounded-3xl space-y-5 sm:space-y-6">
+        <div className="text-center space-y-1 sm:space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Frivilligfesten 2026 – QR-kode</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground px-2">
+            Scan koden med din telefon for at åbne uploadsiden.
           </p>
         </div>
 
-        <div className="flex flex-col items-center space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <canvas ref={canvasRef} />
+        <div className="flex flex-col items-center space-y-5 sm:space-y-6">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-lg max-w-xs w-full flex justify-center">
+            <canvas ref={canvasRef} className="w-full h-auto max-w-[260px] sm:max-w-[320px]" />
           </div>
 
-          <div className="text-center space-y-2">
-            <p className="text-sm font-medium">Upload URL:</p>
-            <code className="block bg-muted px-4 py-2 rounded text-sm break-all">
+          <div className="text-center space-y-1">
+            <p className="text-xs sm:text-sm font-medium">Upload-URL</p>
+            <code className="block bg-muted px-3 py-2 rounded text-[11px] sm:text-xs break-all">
               {uploadUrl}
             </code>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
             <Button onClick={downloadQRCode} className="flex-1">
               <Download className="mr-2 h-4 w-4" />
-              Download QR Code
+              Download QR-kode
             </Button>
           </div>
-
-
         </div>
 
-        <div className="text-center text-sm text-muted-foreground space-y-1">
-          <p>Print this QR code and place it where you want people to scan.</p>
-          <p>They'll be taken directly to the upload page.</p>
+        <div className="text-center text-[11px] sm:text-xs text-muted-foreground space-y-1">
+          <p>Print QR-koden og hæng den op, hvor gæsterne nemt kan se den.</p>
+          <p>Når de scanner, kommer de direkte til siden hvor de kan uploade billeder.</p>
         </div>
       </Card>
     </div>
