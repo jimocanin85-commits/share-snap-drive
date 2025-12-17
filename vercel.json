@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/"
+    },
+    {
+      "source": "/gallery",
+      "destination": "/"
+    }
+  ]
+}
+
+

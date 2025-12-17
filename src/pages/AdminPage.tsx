@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink } from "lucide-react";
+import { Download } from "lucide-react";
+
+const PUBLIC_UPLOAD_URL = import.meta.env.VITE_PUBLIC_UPLOAD_URL as string | undefined;
 
 const AdminPage = () => {
-  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [uploadUrl, setUploadUrl] = useState("");
 
   useEffect(() => {
-    // Get the current domain and construct the upload URL
-    const url = window.location.origin + "/";
+    // Get the public upload URL (env override) or fall back to current origin
+    const url = PUBLIC_UPLOAD_URL || window.location.origin + "/";
     setUploadUrl(url);
 
     // Generate QR code

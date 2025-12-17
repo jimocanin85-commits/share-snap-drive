@@ -198,7 +198,7 @@ const UploadPage = () => {
               Frivilligfesten 2026
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground px-4">
-              Vælg billder fra din telefon.
+              Vælg billeder fra din telefon
             </p>
           </div>
 
