@@ -41,8 +41,8 @@ serve(async (req) => {
     const signatures = [];
     for (let i = 0; i < fileCount; i++) {
       const timestamp = Math.floor(Date.now() / 1000) + i; // Unique timestamp for each
-      const folder = 'JasSari40aars';
-      const tags = 'JasSari40aars';
+      const folder = 'Frivilligfest_2026';
+      const tags = 'Frivilligfest_2026';
       
       // Create signature string - parameters must be in alphabetical order
       const signatureString = `folder=${folder}&tags=${tags}&timestamp=${timestamp}${apiSecret}`;
