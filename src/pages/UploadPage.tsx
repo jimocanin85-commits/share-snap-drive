@@ -197,7 +197,7 @@ const UploadPage = () => {
           {/* Title */}
           <div className="space-y-1 sm:space-y-2">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-              Frivilligfesten 20216
+              Frivilligfesten 2026
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground px-4">
               Vælg billeder fra din telefon og tryk Upload
