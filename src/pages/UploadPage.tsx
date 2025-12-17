@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Upload, CheckCircle2, AlertCircle, X, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import jasSariPhoto from "@/assets/jas-sari-photo.jpg";
+import mbLogo from "@/assets/mb-logo.png";
 import imageCompression from "browser-image-compression";
 import { useNavigate } from "react-router-dom";
 
@@ -187,8 +187,8 @@ const UploadPage = () => {
           <div className="flex justify-center">
             <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-full overflow-hidden shadow-[var(--shadow-button)] ring-4 ring-primary/20">
               <img 
-                src={jasSariPhoto} 
-                alt="Jas & Sari" 
+                src={mbLogo} 
+                alt="MB logo" 
                 className="w-full h-full object-cover"
               />
             </div>
@@ -197,7 +197,7 @@ const UploadPage = () => {
           {/* Title */}
           <div className="space-y-1 sm:space-y-2">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-              Sari&Jas 40 års
+              Frivilligfesten 20216
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground px-4">
               Vælg billeder fra din telefon og tryk Upload
