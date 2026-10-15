@@ -133,6 +133,8 @@ function removeItem(item) {
 
 function render() {
   selection.hidden = items.length === 0;
+  // The send button only appears once there is something to send.
+  $("send").hidden = items.length === 0 && !busy;
   $("selection-count").textContent = `Valgte billeder (${items.length})`;
 
   // Re-use existing <li> elements so previews don't flicker or reload.
@@ -422,4 +424,40 @@ function safeLoad(k) {
   }
 }
 
+// ---------- Photo wall behind the title ----------
+
+/** Smaller copies for the wall, so it costs little mobile data. @param {string} url */
+function wallThumb(url) {
+  return url.replace(/\bh_\d+/, "h_240").replace(/\bw_\d+/, "w_400");
+}
+
+async function loadWall() {
+  /** @type {any} */
+  let data;
+  try {
+    data = await callFunction("get-images");
+  } catch {
+    return; // the page works fine without it
+  }
+  /** @type {{ thumbnail: string }[]} */
+  const photos = Array.isArray(data?.images) ? data.images : [];
+  if (photos.length) $("gallery-link").textContent = `Se alle ${photos.length} billeder fra festen`;
+  if (photos.length < 3) return;
+
+  const wall = $("wall");
+  const latest = photos.slice(0, 24);
+  for (const offset of [0, 1]) {
+    let row = latest.filter((_, i) => i % 2 === offset);
+    if (!row.length) row = latest;
+    while (row.length < 8) row = row.concat(row); // wide enough to cover big screens
+    const el = h("div", { class: "wall-row" });
+    // The row appears twice so the drift loops without a jump.
+    for (const p of [...row, ...row]) el.append(h("img", { src: wallThumb(p.thumbnail), alt: "", decoding: "async" }));
+    wall.append(el);
+  }
+  await Promise.allSettled([...wall.querySelectorAll("img")].slice(0, 8).map((img) => /** @type {HTMLImageElement} */ (img).decode()));
+  wall.classList.add("is-ready");
+}
+
 render();
+loadWall();

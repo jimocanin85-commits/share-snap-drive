@@ -117,8 +117,8 @@ Deno.serve(async (req) => {
 
     const images: Photo[] = resources.map((r) => ({
       publicId: r.public_id,
-      // Square grid tile, cropped around the most interesting part.
-      thumbnail: withTransform(r.secure_url, "c_fill,g_auto,w_400,h_400,q_auto,f_auto"),
+      // Gallery tile: keeps the photo's own shape (the grid lays out rows by aspect ratio).
+      thumbnail: withTransform(r.secure_url, "c_limit,w_800,h_480,q_auto,f_auto"),
       // Full-screen view: sharp but not the multi-MB original.
       url: withTransform(r.secure_url, "c_limit,w_2400,h_2400,q_auto:good,f_auto"),
       // "Save" button: full resolution as a normal JPEG, sent as a download.

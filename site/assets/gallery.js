@@ -45,7 +45,9 @@ async function load(isRefresh = false) {
     if (!photos.length) {
       loading.hidden = true;
       empty.hidden = false;
-      $("empty-text").textContent = "Billederne kunne ikke hentes lige nu. Prøv at opdatere om lidt.";
+      $("empty-title").textContent = "Kunne ikke hente billeder";
+      $("empty-text").textContent = "Tjek forbindelsen, og tryk på opdater om lidt.";
+      count.textContent = "Ingen forbindelse";
     } else {
       toast("Kunne ikke opdatere. Prøv igen om lidt.", "error");
     }
@@ -59,7 +61,7 @@ function renderGrid() {
   loading.hidden = true;
   empty.hidden = photos.length > 0;
   grid.hidden = photos.length === 0;
-  count.textContent = photos.length ? `· ${photos.length} billeder` : "";
+  count.textContent = photos.length === 1 ? "1 billede" : `${photos.length} billeder`;
 
   grid.replaceChildren(
     ...photos.map((p, i) => {
@@ -69,12 +71,14 @@ function renderGrid() {
           alt: "",
           loading: i < 12 ? "eager" : "lazy",
           decoding: "async",
-          width: "400",
-          height: "400",
+          width: String(p.width || 400),
+          height: String(p.height || 400),
         }),
       ]);
       btn.addEventListener("click", () => openAt(i));
-      return h("li", {}, [btn]);
+      // Aspect ratio drives the justified-row layout in style.css.
+      const ratio = p.width && p.height ? Math.min(3, Math.max(0.33, p.width / p.height)) : 1;
+      return h("li", { style: `--r: ${ratio.toFixed(3)}` }, [btn]);
     }),
   );
 }

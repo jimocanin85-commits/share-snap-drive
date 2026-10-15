@@ -23,6 +23,7 @@ site/                    the website (served by Vercel)
   slideshow.html         full-screen slideshow for a projector
   assets/config.js       ← event name and Supabase project: edit this per event
   assets/*.js / .css     page scripts and styles
+  assets/fonts/          Big Shoulders Display + Figtree (OFL, self-hosted)
 supabase/functions/
   upload/                signs uploads so the Cloudinary secret stays private
   get-images/            lists the event's photos for the gallery

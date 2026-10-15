@@ -6,33 +6,38 @@
     <title>Billeder – {event}</title>
     <meta name="description" content="Alle billeder fra festen." />
     <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#6366f1" />
+    <meta name="theme-color" content="#1a0e10" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="preload" href="/assets/fonts/big-shoulders-display.woff" as="font" type="font/woff" crossorigin />
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="stylesheet" href="/assets/style.css" />
     <script type="module" src="/assets/gallery.js"></script>
   </head>
   <body>
     <header class="gallery-head">
-      <h1><span data-event-name>Frivilligfesten 2026</span> <span class="muted small" id="count"></span></h1>
-      <a class="btn btn-outline" href="/"><span data-icon="upload"></span>Upload</a>
+      <a href="/" aria-label="Til uploadsiden"><img class="head-logo" src="/assets/logo.png" alt="" width="360" height="397" /></a>
+      <div class="gallery-title">
+        <h1 class="display" data-event-name>Frivilligfesten 2026</h1>
+        <p id="count">Henter billeder…</p>
+      </div>
       <button class="btn btn-outline" id="refresh-btn" type="button" aria-label="Opdater">
-        <span data-icon="refresh" id="refresh-icon"></span>
+        <span data-icon="refresh"></span>
       </button>
+      <a class="btn" href="/" aria-label="Upload billeder"><span data-icon="upload"></span><span class="btn-label">Upload</span></a>
     </header>
 
     <main>
       <div class="empty" id="loading">
-        <div class="spinner" style="width: 2.5rem; height: 2.5rem; color: var(--primary)"></div>
-        <p class="muted">Indlæser billeder…</p>
+        <div class="spinner" style="width: 2.5rem; height: 2.5rem; color: var(--red-hot)"></div>
       </div>
 
       <div class="empty" id="empty" hidden>
-        <p class="muted" id="empty-text">Ingen billeder endnu. Vær den første!</p>
-        <div class="btn-row" style="justify-content: center">
-          <a class="btn" href="/"><span data-icon="upload"></span>Upload billeder</a>
+        <div class="stack">
+          <p class="display empty-title" id="empty-title">Ingen billeder endnu</p>
+          <p class="muted" id="empty-text">Vær den første til at dele et billede fra festen.</p>
         </div>
+        <a class="btn" href="/"><span data-icon="camera"></span>Vælg billeder</a>
       </div>
 
       <ul class="grid" id="grid" hidden></ul>
