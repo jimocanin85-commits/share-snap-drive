@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lysbilledshow – {event}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="stylesheet" href="/assets/style.css" />
+    <script type="module" src="/assets/slideshow.js"></script>
+  </head>
+  <body class="show">
+    <div class="show-stage" id="stage">
+      <div class="show-slide" id="slide-a"><img class="show-bg" alt="" /><img class="show-fg" alt="" /></div>
+      <div class="show-slide" id="slide-b"><img class="show-bg" alt="" /><img class="show-fg" alt="" /></div>
+    </div>
+
+    <div class="show-empty" id="empty" hidden>
+      <div class="show-qr show-qr-big"><canvas data-qr></canvas></div>
+      <p class="show-empty-title" data-event-name>Frivilligfesten 2026</p>
+      <p>Venter på de første billeder… Scan koden og del dine!</p>
+    </div>
+
+    <span class="show-badge" id="badge" hidden>Nyt billede</span>
+
+    <aside class="show-corner" id="corner">
+      <div class="show-qr"><canvas data-qr></canvas></div>
+      <p>Scan og del<br />dine billeder</p>
+    </aside>
+
+    <div class="show-controls" id="controls">
+      <button class="icon-btn" id="prev-btn" type="button" aria-label="Forrige (←)"><span data-icon="left"></span></button>
+      <button class="icon-btn" id="play-btn" type="button" aria-label="Pause (mellemrum)"><span data-icon="pause"></span></button>
+      <button class="icon-btn" id="next-btn" type="button" aria-label="Næste (→)"><span data-icon="right"></span></button>
+      <label class="show-speed">
+        <span class="visually-hidden">Tid pr. billede</span>
+        <select id="speed">
+          <option value="5">5 sek</option>
+          <option value="8" selected>8 sek</option>
+          <option value="12">12 sek</option>
+          <option value="20">20 sek</option>
+        </select>
+      </label>
+      <button class="icon-btn" id="qr-btn" type="button" aria-label="Vis/skjul QR-kode (Q)"><span data-icon="qr"></span></button>
+      <button class="icon-btn" id="fs-btn" type="button" aria-label="Fuld skærm (F)"><span data-icon="expand"></span></button>
+      <span class="show-status" id="status"></span>
+    </div>
+
+    <div class="show-start" id="start">
+      <div class="card stack center" style="max-width: 32rem">
+        <h1 data-event-name>Frivilligfesten 2026</h1>
+        <p class="muted">Lysbilledshow til projektor eller storskærm</p>
+        <button class="btn btn-big" id="start-btn" type="button"><span data-icon="play"></span>Start lysbilledshow</button>
+        <div class="tiny muted stack" style="--gap: 0.375rem; text-align: left">
+          <p><strong>Spejlet skærm:</strong> tryk bare Start.</p>
+          <p><strong>Udvidet skærm:</strong> træk først dette vindue over på projektoren, og tryk så Start.</p>
+          <p>Taster: <kbd>mellemrum</kbd> pause · <kbd>←</kbd> <kbd>→</kbd> skift · <kbd>F</kbd> fuld skærm · <kbd>Q</kbd> QR-kode · <kbd>Esc</kbd> afslut fuld skærm</p>
+          <p id="code-warning" hidden>⚠️ Ingen event-kode fundet. Åbn siden fra QR-siden (/admin), så QR-koden i hjørnet virker til upload.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

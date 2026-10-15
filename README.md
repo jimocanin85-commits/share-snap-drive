@@ -8,6 +8,7 @@ land in Cloudinary. Everyone can browse and save them from the gallery.
 | Upload      | `/`        | Guests (opened from the QR code)        |
 | Gallery     | `/gallery` | Everyone                                |
 | QR code     | `/admin`   | The organiser: download or print the QR |
+| Slideshow   | `/slideshow` | A projector or TV at the party        |
 
 ## How it's built
 
@@ -19,6 +20,7 @@ site/                    the website (served by Vercel)
   index.html             upload page
   gallery.html           gallery
   admin.html             QR code page
+  slideshow.html         full-screen slideshow for a projector
   assets/config.js       ← event name and Supabase project: edit this per event
   assets/*.js / .css     page scripts and styles
 supabase/functions/
@@ -46,6 +48,19 @@ link carries the event code.
 3. **Edit `site/assets/config.js`**: event name (and the Supabase project, if it changed).
 4. **Push to GitHub**: Vercel deploys `site/` automatically.
 5. **Open `/admin`**, type the same event code, and print or download the QR code.
+
+### Showing photos on a projector
+
+Connect the laptop to the projector with HDMI and open `/slideshow` (there's a
+button on `/admin`). If the projector extends the screen rather than
+mirroring it, drag the browser window onto the projector first, then press
+**Start**. The page goes full screen, keeps the laptop from sleeping, shows
+each photo for 8 seconds (adjustable), and puts new uploads on screen within
+about a minute. A QR code in the corner lets guests join in. It uses the event
+code typed on `/admin` on the same laptop.
+
+Keys: space pauses, ← → skip, F toggles full screen, Q hides the QR code.
+Moving the mouse shows the controls.
 
 ### The event code
 

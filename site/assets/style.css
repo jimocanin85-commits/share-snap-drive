@@ -796,3 +796,203 @@ code.url {
 .spinning {
   animation: spin 0.8s linear infinite;
 }
+
+/* ---------- Slideshow (projector / TV) ---------- */
+
+body.show {
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  cursor: none;
+}
+
+body.show.show-awake {
+  cursor: default;
+}
+
+.show-stage,
+.show-slide {
+  position: fixed;
+  inset: 0;
+}
+
+.show-slide {
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.show-slide.is-active {
+  opacity: 1;
+}
+
+/* Blurred copy fills the black bars beside portrait photos. */
+.show-bg {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  max-width: none;
+  object-fit: cover;
+  filter: blur(40px) brightness(0.45) saturate(1.2);
+}
+
+.show-fg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Slow zoom while a photo is on screen. */
+.show-slide.is-active .show-fg {
+  animation: show-zoom var(--slide-seconds, 10s) ease-out both;
+}
+
+@keyframes show-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+.show-corner {
+  position: fixed;
+  right: 2.5vh;
+  bottom: 2.5vh;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 1.5vh;
+  padding: 1.2vh 2vh 1.2vh 1.2vh;
+  border-radius: 1.5vh;
+  background: rgb(0 0 0 / 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 2.2vh;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.show-qr {
+  width: 15vh;
+  padding: 0.6vh;
+  border-radius: 0.8vh;
+  background: #fff;
+}
+
+.show-qr canvas {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.show-qr-big {
+  width: min(45vh, 70vw);
+  padding: 1.5vh;
+  border-radius: 2vh;
+}
+
+.show-empty {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5vh;
+  padding: 4vh;
+  font-size: 3vh;
+  text-align: center;
+  background: radial-gradient(circle at 50% 40%, hsl(239 50% 22%), #000 70%);
+}
+
+.show-empty-title {
+  font-size: 6vh;
+  font-weight: 750;
+}
+
+.show-badge {
+  position: fixed;
+  top: 2.5vh;
+  left: 2.5vh;
+  z-index: 5;
+  padding: 0.8vh 1.8vh;
+  border-radius: 999px;
+  background: var(--primary);
+  font-size: 2.2vh;
+  font-weight: 700;
+  animation: fade-in 0.6s ease-out both;
+}
+
+.show-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 2.5vh;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.7);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.show-awake .show-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.show-speed select {
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+}
+
+.show-speed option {
+  color: #000;
+}
+
+.show-status {
+  padding: 0 0.75rem 0 0.25rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.show-start {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  color: var(--fg);
+  background: linear-gradient(180deg, var(--bg), var(--bg-2));
+  cursor: default;
+}
+
+kbd {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  background: var(--soft);
+  font: inherit;
+  font-size: 0.85em;
+}
+
+/* The waiting screen already shows a big QR code. */
+.show-empty:not([hidden]) ~ .show-corner {
+  display: none;
+}
