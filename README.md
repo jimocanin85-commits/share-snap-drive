@@ -1,73 +1,70 @@
-# Welcome to your Lovable project
+# Share Snap Drive
 
-## Project info
+Guests scan a QR code at the party, pick photos on their phone, and the photos
+land in Cloudinary. Everyone can browse and save them from the gallery.
 
-**URL**: https://lovable.dev/projects/fdcf94fc-7f5a-46ee-92aa-3fc815740845
+| Page        | Address    | For                                     |
+| ----------- | ---------- | --------------------------------------- |
+| Upload      | `/`        | Guests (opened from the QR code)        |
+| Gallery     | `/gallery` | Everyone                                |
+| QR code     | `/admin`   | The organiser: download or print the QR |
 
-## How can I edit this code?
+## How it's built
 
-There are several ways of editing your application.
+Plain HTML, CSS and JavaScript. There is no framework and no build step:
+Vercel serves the `site/` folder as is.
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/fdcf94fc-7f5a-46ee-92aa-3fc815740845) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+site/                    the website (served by Vercel)
+  index.html             upload page
+  gallery.html           gallery
+  admin.html             QR code page
+  assets/config.js       ← event name and Supabase project: edit this per event
+  assets/*.js / .css     page scripts and styles
+supabase/functions/
+  upload/                signs uploads so the Cloudinary secret stays private
+  get-images/            lists the event's photos for the gallery
 ```
 
-**Edit a file directly in GitHub**
+Photos go straight from the guest's phone to Cloudinary. The `upload`
+function only hands out a short-lived signature, and only to visitors whose
+link carries the event code.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Setting up an event
 
-**Use GitHub Codespaces**
+1. **Supabase secrets** (Project → Edge Functions → Secrets):
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+   | Secret                  | Example              | Notes                                    |
+   | ----------------------- | -------------------- | ---------------------------------------- |
+   | `CLOUDINARY_CLOUD_NAME` |                      | from the Cloudinary dashboard            |
+   | `CLOUDINARY_API_KEY`    |                      |                                          |
+   | `CLOUDINARY_API_SECRET` |                      | never put this in `site/`                |
+   | `EVENT_TAG`             | `Frivilligfest_2026` | Cloudinary folder **and** tag for photos |
+   | `EVENT_CODE`            | `fest26`             | optional, but recommended (see below)    |
 
-## What technologies are used for this project?
+2. **Deploy the functions**: `supabase functions deploy upload get-images`
+3. **Edit `site/assets/config.js`**: event name (and the Supabase project, if it changed).
+4. **Push to GitHub**: Vercel deploys `site/` automatically.
+5. **Open `/admin`**, type the same event code, and print or download the QR code.
 
-This project is built with:
+### The event code
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+With `EVENT_CODE` set, the upload function refuses anyone whose link doesn't
+include `?k=<code>`. The QR code on `/admin` includes it, so guests never type
+anything. Without it, anyone who finds the address could fill your Cloudinary
+account.
 
-## How can I deploy this project?
+If you change the code, reprint the QR. Guests who already scanned keep
+working on the same phone until the code changes.
 
-Simply open [Lovable](https://lovable.dev/projects/fdcf94fc-7f5a-46ee-92aa-3fc815740845) and click on Share -> Publish.
+## Running it locally
 
-## Can I connect a custom domain to my Lovable project?
+Any static file server works, for example:
 
-Yes, you can!
+```sh
+npx serve site
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Pages talk to the live Supabase functions, so uploads made locally are real.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Type-check the scripts (optional, needs TypeScript installed): `npx tsc -p jsconfig.json`

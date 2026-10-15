@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{event} – Del dine billeder</title>
+    <meta name="description" content="Upload og del dine billeder fra festen." />
+    <meta name="theme-color" content="#6366f1" />
+    <meta property="og:title" content="Del dine billeder fra festen" />
+    <meta property="og:description" content="Upload dine billeder direkte fra telefonen." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="preload" href="/assets/logo.png" as="image" />
+    <link rel="stylesheet" href="/assets/style.css" />
+    <script type="module" src="/assets/upload.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <div class="card stack center">
+        <img class="logo" src="/assets/logo.png" alt="MB logo" width="360" height="397" />
+        <h1 data-event-name>Frivilligfesten 2026</h1>
+
+        <label class="dropzone" id="dropzone">
+          <span data-icon="camera"></span>
+          <span>Vælg billeder fra din telefon</span>
+          <span class="small muted" id="limit-hint"></span>
+          <input id="file-input" class="visually-hidden" type="file" accept="image/*,.heic,.heif" multiple />
+        </label>
+
+        <section class="selection" id="selection" hidden aria-label="Valgte billeder">
+          <div class="selection-head">
+            <span id="selection-count"></span>
+            <button class="btn btn-ghost" id="clear-btn" type="button">Ryd alle</button>
+          </div>
+          <ul class="thumbs" id="thumbs"></ul>
+        </section>
+
+        <button class="btn btn-big" id="upload-btn" type="button" disabled>
+          <span data-icon="upload"></span>
+          <span id="upload-label">Upload</span>
+        </button>
+
+        <div id="progress-wrap" hidden>
+          <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Upload">
+            <div id="progress-bar"></div>
+          </div>
+          <p class="small muted" id="progress-text" style="margin-top: 0.5rem"></p>
+        </div>
+
+        <div id="status" aria-live="polite"></div>
+
+        <p class="small">
+          <a href="/gallery">Se alle billeder fra festen</a>
+        </p>
+      </div>
+    </main>
+  </body>
+</html>

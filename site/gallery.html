@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Billeder – {event}</title>
+    <meta name="description" content="Alle billeder fra festen." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#6366f1" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="stylesheet" href="/assets/style.css" />
+    <script type="module" src="/assets/gallery.js"></script>
+  </head>
+  <body>
+    <header class="gallery-head">
+      <h1><span data-event-name>Frivilligfesten 2026</span> <span class="muted small" id="count"></span></h1>
+      <a class="btn btn-outline" href="/"><span data-icon="upload"></span>Upload</a>
+      <button class="btn btn-outline" id="refresh-btn" type="button" aria-label="Opdater">
+        <span data-icon="refresh" id="refresh-icon"></span>
+      </button>
+    </header>
+
+    <main>
+      <div class="empty" id="loading">
+        <div class="spinner" style="width: 2.5rem; height: 2.5rem; color: var(--primary)"></div>
+        <p class="muted">Indlæser billeder…</p>
+      </div>
+
+      <div class="empty" id="empty" hidden>
+        <p class="muted" id="empty-text">Ingen billeder endnu. Vær den første!</p>
+        <div class="btn-row" style="justify-content: center">
+          <a class="btn" href="/"><span data-icon="upload"></span>Upload billeder</a>
+        </div>
+      </div>
+
+      <ul class="grid" id="grid" hidden></ul>
+    </main>
+
+    <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Billedvisning">
+      <div class="lb-loading spinner" id="lb-loading"></div>
+      <img id="lb-img" alt="" />
+      <span class="lb-count" id="lb-count"></span>
+      <button class="icon-btn lb-close" id="lb-close" type="button" aria-label="Luk"><span data-icon="x"></span></button>
+      <button class="icon-btn lb-prev" id="lb-prev" type="button" aria-label="Forrige"><span data-icon="left"></span></button>
+      <button class="icon-btn lb-next" id="lb-next" type="button" aria-label="Næste"><span data-icon="right"></span></button>
+      <button class="btn lb-download" id="lb-download" type="button"><span data-icon="download"></span>Gem billede</button>
+    </div>
+  </body>
+</html>
