@@ -3,6 +3,7 @@
 // shows new uploads next as they arrive, and keeps an upload QR code in the
 // corner so guests can join in.
 import { $, applyEventName, callFunction, hydrateIcons, icon } from "./common.js";
+import { createKeepAwake } from "./keepawake.js";
 import { ADMIN_CODE_KEY, drawQr, loadSetting, saveSetting, uploadUrl } from "./qr.js";
 
 /** How often to look for new uploads. The server caches for 60 s anyway. */
@@ -176,23 +177,24 @@ function toggleFullscreen() {
   else document.documentElement.requestFullscreen?.().catch(() => {});
 }
 
-// The browser drops the lock when the tab is hidden, so it's re-requested on return.
-async function keepAwake() {
-  try {
-    await /** @type {any} */ (navigator).wakeLock?.request("screen");
-  } catch {
-    /* not supported or not allowed; the laptop's own sleep settings apply */
-  }
-}
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && started) keepAwake();
+const awakeWarn = $("awake-warn");
+const awakeState = $("awake-state");
+const awake = createKeepAwake(({ lock, video }) => {
+  const ok = lock || video;
+  awakeState.textContent = ok ? "Skærmen holdes tændt" : "Skærmen kan slukke!";
+  // Give the browser a moment before warning; the video can take a second to start.
+  clearTimeout(warnTimer);
+  if (ok) awakeWarn.hidden = true;
+  else warnTimer = setTimeout(() => (awakeWarn.hidden = awake.status().lock || awake.status().video), 4000);
 });
+/** @type {ReturnType<typeof setTimeout> | undefined} */
+let warnTimer;
 
 // ---------- Controls ----------
 
 $("start-btn").addEventListener("click", async () => {
   toggleFullscreen();
-  keepAwake();
+  awake.start();
   $("start").hidden = true;
   started = true;
   await refresh();

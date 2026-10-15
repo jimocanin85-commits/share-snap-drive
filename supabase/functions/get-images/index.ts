@@ -1,8 +1,9 @@
-// Lists every photo uploaded for this event, newest first.
+// Lists every photo for this event, newest first.
 //
-// Photos are found by their tag (EVENT_TAG, the same value the upload
-// function stamps on each photo), which works whatever folder mode the
-// Cloudinary account uses.
+// A photo counts if it has the event tag (EVENT_TAG, stamped by the upload
+// page) OR sits in the event's folder (e.g. added by hand in the Cloudinary
+// console). Both lookups are merged, so no photo is left out whichever folder
+// mode the Cloudinary account uses.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,10 +13,11 @@ const corsHeaders = {
 
 /** Cloudinary's free plan allows ~500 Admin API calls an hour, so cache briefly. */
 const CACHE_MS = 60_000;
-const MAX_PAGES = 20; // 20 × 500 = 10,000 photos
+const MAX_PAGES = 40; // per lookup: 40 × 500 = 20,000 photos
 
 type CloudinaryResource = {
   public_id: string;
+  resource_type?: string;
   secure_url: string;
   created_at: string;
   width?: number;
@@ -49,16 +51,14 @@ function withTransform(url: string, t: string) {
   return url.replace("/image/upload/", `/image/upload/${t}/`);
 }
 
-async function fetchAll(cloudName: string, auth: string, tag: string) {
+/** Page through one Admin API listing. */
+async function fetchListing(base: URL, auth: string) {
   const all: CloudinaryResource[] = [];
   let cursor: string | undefined;
   for (let page = 0; page < MAX_PAGES; page++) {
-    const url = new URL(
-      `https://api.cloudinary.com/v1_1/${cloudName}/resources/image/tags/${encodeURIComponent(tag)}`,
-    );
+    const url = new URL(base);
     url.searchParams.set("max_results", "500");
     if (cursor) url.searchParams.set("next_cursor", cursor);
-
     const res = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
     if (!res.ok) throw new Error(`Cloudinary ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const data = await res.json();
@@ -67,6 +67,32 @@ async function fetchAll(cloudName: string, auth: string, tag: string) {
     if (!cursor) break;
   }
   return all;
+}
+
+async function fetchAll(cloudName: string, auth: string, tag: string) {
+  const api = `https://api.cloudinary.com/v1_1/${cloudName}`;
+  const byTag = new URL(`${api}/resources/image/tags/${encodeURIComponent(tag)}`);
+  // Fixed folder mode: the folder is part of the public ID.
+  const byPrefix = new URL(`${api}/resources/image/upload`);
+  byPrefix.searchParams.set("prefix", `${tag}/`);
+  // Dynamic folder mode: the folder is a separate "asset folder".
+  const byAssetFolder = new URL(`${api}/resources/by_asset_folder`);
+  byAssetFolder.searchParams.set("asset_folder", tag);
+
+  const results = await Promise.allSettled([byTag, byPrefix, byAssetFolder].map((u) => fetchListing(u, auth)));
+  const ok = results.filter((r) => r.status === "fulfilled");
+  // One lookup failing is normal (e.g. asset folders on a fixed-mode account);
+  // all failing means Cloudinary is unreachable.
+  if (!ok.length) throw (results[0] as PromiseRejectedResult).reason;
+
+  const merged = new Map<string, CloudinaryResource>();
+  for (const r of ok) {
+    for (const res of (r as PromiseFulfilledResult<CloudinaryResource[]>).value) {
+      if (res.resource_type && res.resource_type !== "image") continue;
+      merged.set(res.public_id, res);
+    }
+  }
+  return [...merged.values()];
 }
 
 Deno.serve(async (req) => {

@@ -996,3 +996,30 @@ kbd {
 .show-empty:not([hidden]) ~ .show-corner {
   display: none;
 }
+
+/* Invisible looping video that keeps the screen awake (see keepawake.js). */
+.keep-awake-video {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 2px;
+  height: 2px;
+  opacity: 0.01;
+  pointer-events: none;
+}
+
+.show-warn {
+  position: fixed;
+  top: 2.5vh;
+  left: 50%;
+  z-index: 7;
+  max-width: min(60rem, 90vw);
+  padding: 1vh 2vh;
+  border-radius: 1vh;
+  background: hsl(38 92% 50%);
+  color: #000;
+  font-size: 2vh;
+  font-weight: 650;
+  text-align: center;
+  transform: translateX(-50%);
+}
