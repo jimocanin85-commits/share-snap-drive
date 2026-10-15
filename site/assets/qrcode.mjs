@@ -1,3 +1,4 @@
+// @ts-nocheck  (vendored library, not type-checked)
 //---------------------------------------------------------------------
 //
 // QR Code Generator for JavaScript
