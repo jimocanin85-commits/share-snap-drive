@@ -1,73 +1,139 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Lists every photo for this event, newest first.
+//
+// A photo counts if it has the event tag (EVENT_TAG, stamped by the upload
+// page) OR sits in the event's folder (e.g. added by hand in the Cloudinary
+// console). Both lookups are merged, so no photo is left out whichever folder
+// mode the Cloudinary account uses.
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+/** Cloudinary's free plan allows ~500 Admin API calls an hour, so cache briefly. */
+const CACHE_MS = 60_000;
+const MAX_PAGES = 40; // per lookup: 40 × 500 = 20,000 photos
+
+type CloudinaryResource = {
+  public_id: string;
+  resource_type?: string;
+  secure_url: string;
+  created_at: string;
+  width?: number;
+  height?: number;
+};
+
+type Photo = {
+  publicId: string;
+  thumbnail: string;
+  url: string;
+  download: string;
+  width?: number;
+  height?: number;
+};
+
+let cache: { tag: string; at: number; images: Photo[] } | null = null;
+
+function json(body: unknown, status = 200, maxAge = 0) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      "Cache-Control": maxAge ? `public, max-age=${maxAge}` : "no-store",
+    },
+  });
+}
+
+/** Insert a Cloudinary transformation into a delivery URL. */
+function withTransform(url: string, t: string) {
+  return url.replace("/image/upload/", `/image/upload/${t}/`);
+}
+
+/** Page through one Admin API listing. */
+async function fetchListing(base: URL, auth: string) {
+  const all: CloudinaryResource[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = new URL(base);
+    url.searchParams.set("max_results", "500");
+    if (cursor) url.searchParams.set("next_cursor", cursor);
+    const res = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
+    if (!res.ok) throw new Error(`Cloudinary ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const data = await res.json();
+    all.push(...(data.resources ?? []));
+    cursor = data.next_cursor;
+    if (!cursor) break;
+  }
+  return all;
+}
+
+async function fetchAll(cloudName: string, auth: string, tag: string) {
+  const api = `https://api.cloudinary.com/v1_1/${cloudName}`;
+  const byTag = new URL(`${api}/resources/image/tags/${encodeURIComponent(tag)}`);
+  // Fixed folder mode: the folder is part of the public ID.
+  const byPrefix = new URL(`${api}/resources/image/upload`);
+  byPrefix.searchParams.set("prefix", `${tag}/`);
+  // Dynamic folder mode: the folder is a separate "asset folder".
+  const byAssetFolder = new URL(`${api}/resources/by_asset_folder`);
+  byAssetFolder.searchParams.set("asset_folder", tag);
+
+  const results = await Promise.allSettled([byTag, byPrefix, byAssetFolder].map((u) => fetchListing(u, auth)));
+  const ok = results.filter((r) => r.status === "fulfilled");
+  // One lookup failing is normal (e.g. asset folders on a fixed-mode account);
+  // all failing means Cloudinary is unreachable.
+  if (!ok.length) throw (results[0] as PromiseRejectedResult).reason;
+
+  const merged = new Map<string, CloudinaryResource>();
+  for (const r of ok) {
+    for (const res of (r as PromiseFulfilledResult<CloudinaryResource[]>).value) {
+      if (res.resource_type && res.resource_type !== "image") continue;
+      merged.set(res.public_id, res);
+    }
+  }
+  return [...merged.values()];
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const cloudName = Deno.env.get("CLOUDINARY_CLOUD_NAME");
+  const apiKey = Deno.env.get("CLOUDINARY_API_KEY");
+  const apiSecret = Deno.env.get("CLOUDINARY_API_SECRET");
+  if (!cloudName || !apiKey || !apiSecret) {
+    console.error("Missing Cloudinary secrets");
+    return json({ error: "server_not_configured" }, 500);
+  }
+  const tag = Deno.env.get("EVENT_TAG")?.trim() || "Frivilligfest_2026";
+
+  if (cache && cache.tag === tag && Date.now() - cache.at < CACHE_MS) {
+    return json({ images: cache.images }, 200, 30);
   }
 
   try {
-    const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME');
-    const apiKey = Deno.env.get('CLOUDINARY_API_KEY');
-    const apiSecret = Deno.env.get('CLOUDINARY_API_SECRET');
+    const resources = await fetchAll(cloudName, btoa(`${apiKey}:${apiSecret}`), tag);
+    resources.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
 
-    if (!cloudName || !apiKey || !apiSecret) {
-      throw new Error('Missing Cloudinary credentials');
-    }
+    const images: Photo[] = resources.map((r) => ({
+      publicId: r.public_id,
+      // Gallery tile: keeps the photo's own shape (the grid lays out rows by aspect ratio).
+      thumbnail: withTransform(r.secure_url, "c_limit,w_800,h_480,q_auto,f_auto"),
+      // Full-screen view: sharp but not the multi-MB original.
+      url: withTransform(r.secure_url, "c_limit,w_2400,h_2400,q_auto:good,f_auto"),
+      // "Save" button: full resolution as a normal JPEG, sent as a download.
+      download: withTransform(r.secure_url, "fl_attachment,f_jpg,q_auto:best"),
+      width: r.width,
+      height: r.height,
+    }));
 
-    // Fetch images from the JasSari40aars folder in Cloudinary
-    const auth = btoa(`${apiKey}:${apiSecret}`);
-    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image?type=upload&prefix=JasSari40aars&max_results=500`;
-    
-    console.log('Fetching images from Cloudinary folder: JasSari40aars');
-    
-    const response = await fetch(cloudinaryUrl, {
-      headers: {
-        'Authorization': `Basic ${auth}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Cloudinary API error:', errorText);
-      throw new Error(`Cloudinary API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log(`Found ${data.resources?.length || 0} images`);
-    console.log('Cloudinary response:', JSON.stringify(data));
-
-    // Return both thumbnail and full URLs for faster loading
-    const images = data.resources?.map((resource: any) => ({
-      thumbnail: resource.secure_url.replace('/upload/', '/upload/w_400,h_400,c_fill,q_auto:low,f_auto/'),
-      url: resource.secure_url.replace('/upload/', '/upload/q_auto:good,f_auto/'),
-      publicId: resource.public_id,
-    })) || [];
-
-    return new Response(
-      JSON.stringify({ images }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
-  } catch (error) {
-    console.error('Error fetching images:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+    cache = { tag, at: Date.now(), images };
+    console.log(`Listed ${images.length} photos for tag ${tag}`);
+    return json({ images }, 200, 30);
+  } catch (err) {
+    console.error("Listing photos failed:", err instanceof Error ? err.message : err);
+    // A slightly old list beats an error page.
+    if (cache && cache.tag === tag) return json({ images: cache.images, stale: true }, 200, 10);
+    return json({ error: "list_failed" }, 502);
   }
 });

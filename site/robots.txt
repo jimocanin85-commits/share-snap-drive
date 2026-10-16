@@ -1,0 +1,10 @@
+# Guest photos are private to the event: keep search engines out,
+# but let chat apps fetch link previews.
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: *
+Disallow: /
