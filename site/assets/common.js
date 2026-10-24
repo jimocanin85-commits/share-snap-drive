@@ -2,19 +2,15 @@
 import { CONFIG } from "./config.js";
 
 /**
- * Call one of the Supabase edge functions.
+ * Call one of the site's own functions in /api (Vercel Functions).
  * @param {string} name
  * @param {{ method?: string, body?: unknown }} [opts]
  * @returns {Promise<any>}
  */
 export async function callFunction(name, opts = {}) {
-  const res = await fetch(`${CONFIG.supabaseUrl}/functions/v1/${name}`, {
+  const res = await fetch(`/api/${name}`, {
     method: opts.method ?? (opts.body === undefined ? "GET" : "POST"),
-    headers: {
-      apikey: CONFIG.supabaseKey,
-      Authorization: `Bearer ${CONFIG.supabaseKey}`,
-      ...(opts.body === undefined ? {} : { "Content-Type": "application/json" }),
-    },
+    headers: opts.body === undefined ? {} : { "Content-Type": "application/json" },
     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
   });
   /** @type {any} */
