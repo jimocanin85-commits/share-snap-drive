@@ -1,6 +1,6 @@
 // POST /api/upload → a signed ticket so the browser can upload straight to
 // Cloudinary without ever seeing the API secret.
-import { json, sameText, settings, uploadTicket } from "../lib/cloudinary.mjs";
+import { json, normaliseCode, sameText, settings, uploadTicket } from "../lib/cloudinary.mjs";
 
 export async function POST(request) {
   const s = settings();
@@ -16,7 +16,7 @@ export async function POST(request) {
     // empty body is fine
   }
 
-  if (s.code && !sameText(String(body?.code ?? "").trim(), s.code)) {
+  if (s.code && !sameText(normaliseCode(body?.code), s.code)) {
     return json({ error: "invalid_code" }, 401);
   }
 
