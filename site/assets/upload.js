@@ -441,7 +441,6 @@ async function loadWall() {
   }
   /** @type {{ thumbnail: string }[]} */
   const photos = Array.isArray(data?.images) ? data.images : [];
-  if (photos.length) $("gallery-link").textContent = `Se alle ${photos.length} billeder fra festen`;
   if (photos.length < 3) return;
 
   const wall = $("wall");
