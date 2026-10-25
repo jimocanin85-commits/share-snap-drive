@@ -4,7 +4,7 @@
 // corner so guests can join in.
 import { $, applyEventName, callFunction, hydrateIcons, icon } from "./common.js";
 import { createKeepAwake } from "./keepawake.js";
-import { ADMIN_CODE_KEY, drawQr, loadSetting, saveSetting, uploadUrl } from "./qr.js";
+import { drawQr, loadSetting, saveSetting, uploadUrl } from "./qr.js";
 
 /** How often to look for new uploads. The server caches for 60 s anyway. */
 const POLL_MS = 30_000;
@@ -51,10 +51,9 @@ speed.addEventListener("change", () => {
 });
 const seconds = () => Number(speed.value) || 8;
 
-// The QR in the corner uses ?k=… if given, else the code typed on /admin on
-// this computer.
-const code = new URLSearchParams(location.search).get("k") || loadSetting(ADMIN_CODE_KEY) || "";
-$("code-warning").hidden = Boolean(code);
+// The QR in the corner is the plain upload address (plus ?k=… only if the
+// slideshow itself was opened with one).
+const code = new URLSearchParams(location.search).get("k") || "";
 document.querySelectorAll("canvas[data-qr]").forEach((c) => drawQr(/** @type {HTMLCanvasElement} */ (c), uploadUrl(code), 600));
 
 let qrVisible = loadSetting(QR_KEY) !== "0";

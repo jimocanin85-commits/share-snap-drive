@@ -46,13 +46,13 @@ link carries the event code.
    | `CLOUDINARY_API_KEY`    |                      |                                               |
    | `CLOUDINARY_API_SECRET` |                      | never put this in `site/`                     |
    | `EVENT_TAG`             | `Frivilligfest_2027` | optional; Cloudinary folder **and** tag       |
-   | `EVENT_CODE`            | `fest27`             | optional, but recommended (see below)         |
+   | `EVENT_CODE`            |                      | optional, not used for Frivilligfesten (see below) |
 
    Vercel only applies changed variables to new deployments: after editing
    them, redeploy (Deployments → ⋯ → Redeploy).
 2. **Edit `site/assets/config.js`**: the event name.
 3. **Push to GitHub**: Vercel deploys automatically.
-4. **Open `/admin`**, type the same event code, and print or download the QR code.
+4. **Open `/admin`** and print or download the QR code. It's the plain upload address, so it never changes.
 
 ### Showing photos on a projector
 
@@ -61,21 +61,20 @@ button on `/admin`). If the projector extends the screen rather than
 mirroring it, drag the browser window onto the projector first, then press
 **Start**. The page goes full screen, keeps the laptop from sleeping, shows
 each photo for 8 seconds (adjustable), and puts new uploads on screen within
-about a minute. A QR code in the corner lets guests join in. It uses the event
-code typed on `/admin` on the same laptop.
+about a minute. A QR code in the corner lets guests join in. It uses the same
+address as the printed QR code.
 
 Keys: space pauses, ← → skip, F toggles full screen, Q hides the QR code.
 Moving the mouse shows the controls.
 
-### The event code
+### The event code (optional)
 
-With `EVENT_CODE` set, the upload function refuses anyone whose link doesn't
-include `?k=<code>`. The QR code on `/admin` includes it, so guests never type
-anything. Without it, anyone who finds the address could fill your Cloudinary
-account.
+Frivilligfesten doesn't use one: the link isn't shared outside the party, so
+anyone with the address can upload, and the QR code is simply the address.
 
-If you change the code, reprint the QR. Guests who already scanned keep
-working on the same phone until the code changes.
+For an event that needs it, set `EVENT_CODE` in Vercel and open
+`/admin?code=<code>`. The QR code then carries `?k=<code>`, guests still type
+nothing, and uploads without the code are refused. Spaces and case don't matter.
 
 ## Running it locally
 
