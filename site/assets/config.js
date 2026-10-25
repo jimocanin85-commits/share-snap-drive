@@ -4,7 +4,7 @@
 
 export const CONFIG = {
   /** Shown as the page title and heading. */
-  eventName: "Frivilligfesten 2026",
+  eventName: "Frivilligfesten 2027",
 
   /**
    * Address printed in the QR code. Leave empty to use the address the admin

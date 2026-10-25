@@ -323,15 +323,25 @@ a {
   padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem 2.5rem;
 }
 
+/* The club crest is the first thing guests see. */
 .up-logo {
-  width: 3.75rem;
+  width: clamp(7rem, 34vw, 10rem);
   height: auto;
-  filter: drop-shadow(0 4px 14px rgb(0 0 0 / 0.5));
+  filter: drop-shadow(0 8px 24px rgb(0 0 0 / 0.55));
 }
 
+.up-heading {
+  container-type: inline-size;
+}
+
+/* "Frivilligfesten 2027" is ~7× as wide as its font size, so 14% of the
+   column keeps the whole name on one line at any screen width. If the event
+   name in config.js gets much longer, lower 14cqi to match. */
 .up-title {
-  margin-top: clamp(5rem, 22vh, 11rem);
-  font-size: clamp(3.25rem, 15.5vw, 6.75rem);
+  margin-top: clamp(1.5rem, 9vh, 4.5rem);
+  font-size: min(6.75rem, 14cqi);
+  white-space: nowrap;
+  overflow-wrap: normal;
   text-shadow: 0 2px 24px rgb(26 14 16 / 0.65);
 }
 
@@ -341,6 +351,102 @@ a {
   color: var(--ink);
   font-size: 1.125rem;
   text-shadow: 0 1px 12px rgb(26 14 16 / 0.8);
+}
+
+/* Desktop: the crest large on the left; name, intro and upload panel in a
+   wide column on the right, so the name fits on one line. */
+@media (min-width: 960px) {
+  .up-inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "logo heading"
+      "logo panel";
+    align-content: center;
+    align-items: start;
+    column-gap: clamp(2.5rem, 5vw, 5.5rem);
+    row-gap: 2.5rem;
+    width: min(100%, 84rem);
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 3rem clamp(2rem, 5vw, 4rem);
+  }
+
+  .up-hero {
+    display: contents;
+  }
+
+  .up-logo {
+    grid-area: logo;
+    align-self: center;
+    width: clamp(14rem, 22vw, 22rem);
+  }
+
+  .up-heading {
+    grid-area: heading;
+  }
+
+  .up-title {
+    margin-top: 0;
+    font-size: min(10rem, 14cqi);
+  }
+
+  .up-lede {
+    max-width: 34rem;
+    margin-top: 1rem;
+    font-size: 1.3rem;
+  }
+
+  .up-panel {
+    grid-area: panel;
+    max-width: 36rem;
+  }
+
+  .up-panel {
+    padding: 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: rgb(35 19 22 / 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.7);
+  }
+
+  .up-panel .up-actions {
+    margin-top: 0;
+  }
+
+  .up-panel .pick {
+    padding: 1.75rem 1.6rem;
+  }
+
+  .up-panel .pick-title {
+    font-size: 2.6rem;
+  }
+
+  .up-panel .pick .icon {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .up-panel .selection {
+    background: var(--night-3);
+  }
+
+  /* On a big screen the photo wall can fill the whole background. */
+  .wall {
+    height: 100%;
+    mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 95%);
+  }
+
+  .wall.is-ready {
+    opacity: 0.28;
+  }
+
+  .wall-row img {
+    height: clamp(9rem, 22vh, 14rem);
+  }
 }
 
 .up-actions {
@@ -817,6 +923,18 @@ a {
 .panel-head img {
   width: 3.25rem;
   height: auto;
+}
+
+.panel-head > div {
+  flex: 1;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+/* Keep the event name on one line next to the crest (see .up-title). */
+.panel-head .panel-title {
+  font-size: min(3.5rem, 14cqi);
+  white-space: nowrap;
 }
 
 .panel-head .display + p {

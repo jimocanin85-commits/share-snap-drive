@@ -45,8 +45,8 @@ link carries the event code.
    | `CLOUDINARY_CLOUD_NAME` |                      | Cloudinary → Settings → API Keys              |
    | `CLOUDINARY_API_KEY`    |                      |                                               |
    | `CLOUDINARY_API_SECRET` |                      | never put this in `site/`                     |
-   | `EVENT_TAG`             | `Frivilligfest_2026` | optional; Cloudinary folder **and** tag       |
-   | `EVENT_CODE`            | `fest26`             | optional, but recommended (see below)         |
+   | `EVENT_TAG`             | `Frivilligfest_2027` | optional; Cloudinary folder **and** tag       |
+   | `EVENT_CODE`            | `fest27`             | optional, but recommended (see below)         |
 
    Vercel only applies changed variables to new deployments: after editing
    them, redeploy (Deployments → ⋯ → Redeploy).
