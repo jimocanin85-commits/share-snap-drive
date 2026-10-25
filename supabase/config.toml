@@ -1,7 +1,0 @@
-project_id = "yqbnwxwqlekqwdooevyb"
-
-[functions.upload]
-verify_jwt = false
-
-[functions.get-images]
-verify_jwt = false

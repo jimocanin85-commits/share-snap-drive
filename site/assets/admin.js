@@ -21,7 +21,7 @@ function update() {
   urlBox.textContent = url;
   hint.textContent = code
     ? "Koden er med i QR-koden, så gæster skal ikke taste noget."
-    : "Uden kode virker uploads kun, hvis EVENT_CODE ikke er sat i Supabase.";
+    : "Uden kode virker uploads kun, hvis EVENT_CODE ikke er sat i Vercel.";
   drawQr(canvas, url);
 }
 

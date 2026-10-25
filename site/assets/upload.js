@@ -248,7 +248,7 @@ async function startUpload() {
   /** @type {any} */
   let ticket;
   try {
-    ticket = normaliseTicket(await callFunction("upload", { body: { code: eventCode } }));
+    ticket = await callFunction("upload", { body: { code: eventCode } });
   } catch (err) {
     queue.forEach((it) => (it.state = "failed"));
     busy = false;
@@ -335,27 +335,6 @@ async function uploadWithRetry(item, ticket) {
     }
   }
   return false;
-}
-
-/**
- * The old upload function (before this site was rebuilt) answers with a list
- * of per-file signatures instead of one ticket. Accept both, so the site keeps
- * working whichever version of the function is deployed.
- * @param {any} data
- */
-function normaliseTicket(data) {
-  if (data?.signature && data?.cloudName) return data;
-  const s = Array.isArray(data?.signatures) ? data.signatures[0] : null;
-  if (s?.signature && s?.cloudName) {
-    return {
-      cloudName: s.cloudName,
-      apiKey: s.apiKey,
-      timestamp: s.timestamp,
-      signature: s.signature,
-      params: { folder: s.folder, tags: s.tags },
-    };
-  }
-  throw new Error("Unexpected answer from the upload function");
 }
 
 /**
