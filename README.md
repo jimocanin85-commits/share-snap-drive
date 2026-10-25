@@ -1,91 +1,107 @@
 # Share Snap Drive
 
-Guests scan a QR code at the party, pick photos on their phone, and the photos
-land in Cloudinary. Everyone can browse and save them from the gallery.
+Billeddeling til Frivilligfesten. Gæsterne scanner en QR-kode, vælger billeder
+på telefonen, og billederne lander i Cloudinary. Alle kan se og gemme dem i
+galleriet, og de vises løbende på storskærmen.
 
-| Page        | Address    | For                                     |
-| ----------- | ---------- | --------------------------------------- |
-| Upload      | `/`        | Guests (opened from the QR code)        |
-| Gallery     | `/gallery` | Everyone                                |
-| QR code     | `/admin`   | The organiser: download or print the QR |
-| Slideshow   | `/slideshow` | A projector or TV at the party        |
+Live: <https://share-snap-drive.vercel.app>
 
-## How it's built
+| Side          | Adresse      | Til                                       |
+| ------------- | ------------ | ----------------------------------------- |
+| Upload        | `/`          | Gæsterne (åbnes fra QR-koden)             |
+| Galleri       | `/gallery`   | Alle                                      |
+| QR-kode       | `/admin`     | Arrangøren: download eller print QR-koden |
+| Lysbilledshow | `/slideshow` | Projektor eller storskærm til festen      |
 
-Plain HTML, CSS and JavaScript, hosted entirely on Vercel. There is no
-framework, no build step and no dependencies: Vercel serves the `site/` folder
-as is and runs the two small functions in `api/`.
+## Sådan er det bygget
+
+Almindelig HTML, CSS og JavaScript, som kører på Vercel. Der er intet
+framework, intet byggetrin og ingen pakker: Vercel viser mappen `site/`, som
+den er, og kører de to små funktioner i `api/`.
 
 ```
-site/                    the website (served by Vercel)
-  index.html             upload page
-  gallery.html           gallery
-  admin.html             QR code page
-  slideshow.html         full-screen slideshow for a projector
-  assets/config.js       ← event name: edit this per event
-  assets/*.js / .css     page scripts and styles
-  assets/fonts/          Big Shoulders Display + Figtree (OFL, self-hosted)
-api/                     Vercel Functions
-  upload.mjs             signs uploads so the Cloudinary secret stays private
-  get-images.mjs         lists the event's photos for the gallery and slideshow
-lib/cloudinary.mjs       shared Cloudinary code for the two functions
+site/                    hjemmesiden
+  index.html             uploadside
+  gallery.html           galleri
+  admin.html             QR-kode
+  slideshow.html         lysbilledshow til projektor
+  404.html               "siden findes ikke"
+  assets/config.js       ← festens navn: ret her til næste fest
+  assets/*.js / .css     sidernes kode og udseende
+  assets/fonts/          Big Shoulders Display + Figtree (OFL-licens, ligger lokalt)
+api/                     Vercel-funktioner
+  upload.mjs             giver en kortvarig upload-tilladelse, så Cloudinary-nøglen forbliver hemmelig
+  get-images.mjs         henter festens billeder til galleri og lysbilledshow
+lib/cloudinary.mjs       fælles Cloudinary-kode til de to funktioner
 ```
 
-Photos go straight from the guest's phone to Cloudinary. The `upload`
-function only hands out a short-lived signature, and only to visitors whose
-link carries the event code.
+Billederne sendes direkte fra gæstens telefon til Cloudinary. Billeder over
+10 MB gøres mindre på telefonen først (grænsen på Cloudinarys gratis plan).
 
-## Setting up an event
+Galleriet og lysbilledshowet viser alle billeder i festens mappe, nyeste
+først, også billeder lagt direkte ind i Cloudinary. Listen gemmes i op til et
+halvt minut ad gangen, så nye billeder dukker op inden for cirka et minut.
 
-1. **Vercel environment variables** (Project → Settings → Environment Variables,
-   tick Production, Preview and Development):
+## Opsætning
 
-   | Variable                | Example              | Notes                                         |
-   | ----------------------- | -------------------- | --------------------------------------------- |
-   | `CLOUDINARY_CLOUD_NAME` |                      | Cloudinary → Settings → API Keys              |
-   | `CLOUDINARY_API_KEY`    |                      |                                               |
-   | `CLOUDINARY_API_SECRET` |                      | never put this in `site/`                     |
-   | `EVENT_TAG`             | `Frivilligfest_2027` | optional; Cloudinary folder **and** tag       |
-   | `EVENT_CODE`            |                      | optional, not used for Frivilligfesten (see below) |
+1. **Miljøvariabler i Vercel** (projekt → Settings → Environment Variables,
+   sæt flueben ved Production, Preview og Development):
 
-   Vercel only applies changed variables to new deployments: after editing
-   them, redeploy (Deployments → ⋯ → Redeploy).
-2. **Edit `site/assets/config.js`**: the event name.
-3. **Push to GitHub**: Vercel deploys automatically.
-4. **Open `/admin`** and print or download the QR code. It's the plain upload address, so it never changes.
+   | Variabel                | Værdi                                | Bemærkning                                 |
+   | ----------------------- | ------------------------------------ | ------------------------------------------ |
+   | `CLOUDINARY_CLOUD_NAME` | fra Cloudinary → Settings → API Keys |                                            |
+   | `CLOUDINARY_API_KEY`    | samme sted                           |                                            |
+   | `CLOUDINARY_API_SECRET` | samme sted                           | må aldrig stå i `site/`                    |
+   | `EVENT_TAG`             | fx `Frivilligfest_2028`              | valgfri; standard er `Frivilligfest_2027`  |
+   | `EVENT_CODE`            |                                      | valgfri, bruges ikke (se nedenfor)         |
 
-### Showing photos on a projector
+   Vercel bruger først ændrede variabler ved næste udgivelse: tryk
+   Deployments → ⋯ → **Redeploy** efter en ændring.
+2. **Push til GitHub.** Vercel udgiver automatisk fra `main`.
+3. **Åbn `/admin`**, og download eller print QR-koden. Den er bare sidens
+   adresse, så den er den samme hver gang.
 
-Connect the laptop to the projector with HDMI and open `/slideshow` (there's a
-button on `/admin`). If the projector extends the screen rather than
-mirroring it, drag the browser window onto the projector first, then press
-**Start**. The page goes full screen, keeps the laptop from sleeping, shows
-each photo for 8 seconds (adjustable), and puts new uploads on screen within
-about a minute. A QR code in the corner lets guests join in. It uses the same
-address as the printed QR code.
+### Til næste fest
 
-Keys: space pauses, ← → skip, F toggles full screen, Q hides the QR code.
-Moving the mouse shows the controls.
+1. Ret `eventName` i `site/assets/config.js`, fx til `Frivilligfesten 2028`.
+2. Opret en ny mappe i Cloudinary, og sæt `EVENT_TAG` i Vercel til mappens
+   navn. Så starter galleriet forfra, og sidste års billeder bliver liggende
+   i deres egen mappe.
+3. Redeploy i Vercel.
 
-### The event code (optional)
+### Lysbilledshow på projektor
 
-Frivilligfesten doesn't use one: the link isn't shared outside the party, so
-anyone with the address can upload, and the QR code is simply the address.
+Slut laptoppen til projektoren med HDMI, og åbn `/slideshow` (der er en knap
+på `/admin`). Hvis projektoren er en udvidet skærm, så træk først vinduet over
+på projektoren. Tryk **Start**. Siden går i fuld skærm og holder selv
+skærmen tændt, også uden at nogen rører mus eller tastatur. Hold alligevel
+laptoppen til strøm, for på batteri kan strømspareindstillinger overrule
+browseren. Hvert billede vises i 8 sekunder (kan ændres), nye billeder vises
+først, og en QR-kode i hjørnet lader gæsterne være med.
 
-For an event that needs it, set `EVENT_CODE` in Vercel and open
-`/admin?code=<code>`. The QR code then carries `?k=<code>`, guests still type
-nothing, and uploads without the code are refused. Spaces and case don't matter.
+Taster: mellemrum pause, ← → skift billede, F fuld skærm, Q vis/skjul QR-kode.
+Kontrollerne vises, når musen flyttes.
 
-## Running it locally
+### Event-kode (valgfri)
 
-With the [Vercel CLI](https://vercel.com/docs/cli), which also runs `api/`:
+Frivilligfesten bruger ingen kode, fordi linket ikke deles uden for festen.
+Alle med adressen kan uploade.
+
+Skal en anden fest have en kode, så sæt `EVENT_CODE` i Vercel og åbn
+`/admin?code=<koden>`. Koden kommer så med i QR-koden, gæsterne taster stadig
+intet, og uploads uden koden afvises. Mellemrum og store/små bogstaver er
+ligegyldige.
+
+## Kør lokalt
+
+Med [Vercel CLI](https://vercel.com/docs/cli), som også kører `api/`:
 
 ```sh
-npx vercel link       # once
-npx vercel env pull   # copies the variables into .env.local
+npx vercel link       # første gang
+npx vercel env pull   # henter variablerne til .env.local
 npx vercel dev
 ```
 
-Uploads made locally go to the real Cloudinary account.
+Uploads lavet lokalt havner i den rigtige Cloudinary-konto.
 
-Type-check the scripts (optional, needs TypeScript installed): `npx tsc -p jsconfig.json`
+Tjek koden for fejl (valgfrit, kræver TypeScript): `npx tsc -p jsconfig.json`
